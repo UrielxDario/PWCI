@@ -1,0 +1,278 @@
+body {
+    background-color: #121212;
+    color: white;
+}
+
+.navbar {
+    background-color: #232F3E;
+}
+
+.navbar-brand {
+    color: #ffe600;
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.search-bar {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+}
+
+.form-control {
+    width: 100%;
+}
+
+.nav-link {
+    color: white;
+}
+
+.nav-link:hover {
+    color: #ffe600;
+}
+
+.dropdown-menu {
+    background-color: #232F3E;
+}
+
+.dropdown-menu a {
+    color: white;
+}
+
+.dropdown-menu a:hover {
+    background-color: #FF9900;
+    color: white;
+}
+
+/* Contenedor del producto */
+.container {
+    margin-top: 20px;
+}
+
+.producto {
+    background-color: #232F3E;
+    padding: 20px;
+    border-radius: 10px;
+    transition: transform 0.2s;
+}
+
+/* Imagen del producto */
+.producto img {
+    max-width: 100%;  
+    height: auto;    
+    max-height: 200px; 
+    object-fit: cover; 
+    border-radius: 10px; 
+}
+
+.producto:hover {
+    transform: scale(1.02);
+}
+
+.carrusel-imagenes {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.img-principal {
+    width: 100%;
+    height: auto;
+    max-height: 400px;
+    border-radius: 10px;
+    object-fit: cover;
+}
+
+.miniaturas {
+    display: flex;
+    gap: 5px;
+}
+
+.miniatura img {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.miniatura img:hover {
+    border: 2px solid #ffe600;
+}
+
+/* Información del producto */
+h4 {
+    color: #ffe600;
+    margin-bottom: 10px;
+}
+
+p {
+    color: #ccc;
+}
+
+.precio {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #ffe600;
+    margin-top: 20px;
+}
+.stock {
+    font-size: 1rem;
+    margin-bottom: 20px;
+}
+
+/* Comentarios */
+.comentarios {
+    margin-top: 30px;
+}
+
+.comentario {
+    background-color: #1c1c1c;
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 5px;
+}
+
+.nombre-usuario {
+    color: #ffe600;
+    font-weight: bold;
+}
+
+.calificacion {
+    color: #FF9900;
+}
+
+.comentario-texto {
+    color: #ccc;
+    margin-top: 5px;
+}
+
+/* Botones */
+.boton-carrito {
+    background-color: #ffe600;
+    color: #121212;
+    font-weight: bold;
+    padding: 10px;
+    border-radius: 5px;
+    border: none;
+}
+
+.boton-carrito:hover {
+    background-color: #FF9900;
+}
+
+.boton-lista {
+    background-color: #FF9900;
+    color: white;
+    font-weight: bold;
+    padding: 10px;
+    border-radius: 5px;
+    border: none;
+}
+
+.boton-lista:hover {
+    background-color: #ffe600;
+    color: #121212;
+}
+
+/* Contador de cantidad */
+.contador {
+    margin-bottom: 15px;
+}
+
+.form-select {
+    background-color: #232F3E;
+    color: #ffe600;
+    border: none;
+}
+
+.form-select option {
+    background-color: #232F3E;
+    color: white;
+}
+
+.text-end {
+    color: #ffe600;
+}
+
+
+/* Imágenes del carrusel */
+
+
+/* Video del carrusel */
+.carousel-inner video {
+    max-height: 400px;  
+    width: 100%;        
+    object-fit: cover; 
+}
+
+/* Miniaturas de imágenes */
+.img-thumbnail {
+    width: 80px;        
+    height: 80px;       
+    object-fit: cover;  
+    cursor: pointer;    
+}
+
+.img-thumbnail:hover {
+    border: 2px solid #ffe600;  
+}
+
+
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+    filter: invert(100%) sepia(100%) saturate(0%) hue-rotate(93deg) brightness(100%) contrast(100%);
+}
+
+
+
+
+
+
+
+
+
+/* Estilos para las modales */
+.modal-content {
+    background-color: #232F3E; 
+    color: #ffffff;
+}
+
+.modal-header {
+    border-bottom: 1px solid #ffe600; 
+}
+
+.modal-title {
+    color: #ffe600; 
+}
+
+.btn-close {
+    background-color: transparent;
+    color: #ffe600; 
+}
+
+.btn-close:hover {
+    color: #ffcc00; 
+}
+
+.modal-footer .btn {
+    background-color: #ffe600; 
+    color: #232F3E; 
+}
+
+.modal-footer .btn-secondary {
+    background-color: #444; 
+    color: #ffffff; 
+}
+
+.modal-footer .btn-secondary:hover {
+    background-color: #555; 
+}
+
+.modal-body .form-label {
+    color: #ffffff; 
+}
+
+.modal-body .form-check-label {
+    color: #ffffff;
+}

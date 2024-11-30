@@ -1,0 +1,81 @@
+/* Estilos personalizados */
+body {
+    background-color: #121212;
+    color: white;
+}
+
+.navbar {
+    background-color: #232F3E;
+    justify-content: center;
+}
+
+.navbar-brand {
+    color: #ffe600;
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.hero-section {
+    height: 80vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    text-align: center;
+    position: relative;
+    background-image: url('../img/pantallaespera.jpg'); /* Mantén la ruta */
+    background-size: 100% 100%; /* Estira la imagen en ambas dimensiones */
+    background-position: center; /* Centra la imagen */
+    background-repeat: no-repeat;
+   
+}
+
+.hero-text {
+    position: relative; 
+    z-index: 1; 
+    background-color: rgba(0, 0, 0, 0.7); 
+    padding: 30px;
+    border-radius: 10px;
+    text-align: center;
+
+}
+
+
+
+.navbar-brand:hover {
+    color: #ffc400;
+}
+
+
+
+.nav-link {
+    color: white;
+}
+
+.nav-link:hover {
+    color: #ffe600;
+}
+
+.dropdown-menu {
+    background-color: #232F3E;
+    margin-left: -65px; 
+
+}
+
+.dropdown-menu a {
+    color: white;
+}
+
+.dropdown-menu a:hover {
+    background-color: #FF9900;
+    color: white;
+}
+
+
+.modal-backdrop {
+    backdrop-filter: blur(5px);
+}
+
+
+
+

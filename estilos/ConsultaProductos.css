@@ -1,0 +1,166 @@
+body {
+    background-color: #121212;
+    color: #ffe600;
+}
+
+.navbar {
+    background-color: #232F3E;
+}
+
+.navbar-brand {
+    color: #ffe600;
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.search-bar {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+}
+
+.form-control {
+    width: 100%;
+}
+
+.nav-link {
+    color: white;
+}
+
+.nav-link:hover {
+    color: #ffe600;
+}
+
+.dropdown-menu {
+    background-color: #232F3E;
+}
+
+.dropdown-menu a {
+    color: white;
+}
+
+.dropdown-menu a:hover {
+    background-color: #FF9900;
+    color: white;
+}
+
+/* Título de la página */
+h2 {
+    font-size: 2.5rem;
+    color: #ffe600;
+    font-weight: bold;
+}
+
+/* Estilo para el formulario de filtros */
+.form-label {
+    color: #fff;
+}
+
+.form-select {
+    background-color: #232F3E;
+    color: #ffe600;
+    border: none;
+    box-shadow: none;
+}
+
+button[type="submit"] {
+    background-color: #ffe600;
+    color: #232F3E;
+}
+
+/* Estilo para las tarjetas de productos */
+.producto {
+    background-color: #232F3E;
+    border: none;
+    transition: transform 0.3s;
+}
+
+
+.imagen-producto {
+    height: 350px;
+    object-fit:cover;
+}
+
+.cuerpo-producto {
+    text-align: center;
+}
+
+.titulo-producto {
+    color: #ffe600;
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+.precio-producto, .cantidad-producto {
+    color: #fff;
+    font-size: 1rem;
+}
+
+.card-body {
+    color: inherit !important; /* Esto puede estar causando problemas */
+}
+
+.producto .autorizado {
+    color: green !important;
+}
+
+.producto .pendiente {
+    color: yellow !important;
+}
+
+.producto .denegado {
+    color: red !important;
+}
+
+
+
+
+
+
+
+/* Estilos para las modales */
+.modal-content {
+    background-color: #232F3E; 
+    color: #ffffff;
+}
+
+.modal-header {
+    border-bottom: 1px solid #ffe600; 
+}
+
+.modal-title {
+    color: #ffe600; 
+}
+
+.btn-close {
+    background-color: transparent;
+    color: #ffe600; 
+}
+
+.btn-close:hover {
+    color: #ffcc00; 
+}
+
+.modal-footer .btn {
+    background-color: #ffe600; 
+    color: #232F3E; 
+}
+
+.modal-footer .btn-secondary {
+    background-color: #444; 
+    color: #ffffff; 
+}
+
+.modal-footer .btn-secondary:hover {
+    background-color: #555; 
+}
+
+.modal-body .form-label {
+    color: #ffffff; 
+}
+
+.modal-body .form-check-label {
+    color: #ffffff;
+}
+
+

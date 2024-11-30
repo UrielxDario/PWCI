@@ -1,0 +1,116 @@
+body {
+    background-color: #121212;
+    color: #ffe600;
+}
+
+.navbar {
+    background-color: #232F3E;
+}
+
+.navbar-brand {
+    color: #ffe600;
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.search-bar {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+}
+
+.form-control {
+    width: 100%;
+}
+
+.nav-link {
+    color: white;
+}
+
+.nav-link:hover {
+    color: #ffe600;
+}
+
+.dropdown-menu {
+    background-color: #232F3E;
+}
+
+.dropdown-menu a {
+    color: white;
+}
+
+.dropdown-menu a:hover {
+    background-color: #FF9900;
+    color: white;
+}
+
+.table {
+    background-color: #ffffff; /* Fondo blanco para las tablas */
+}
+
+.table th {
+    background-color: #232F3E; /* Fondo de encabezado */
+    color: #ffe600; /* Color del texto */
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: #f8f9fa; /* Color de fondo de filas alternas */
+}
+
+.table-striped tbody tr:hover {
+    background-color: #e9ecef; /* Color de fondo al pasar el mouse */
+}
+
+
+
+
+
+
+
+
+
+
+/* Estilos para las modales */
+.modal-content {
+    background-color: #232F3E; 
+    color: #ffffff;
+}
+
+.modal-header {
+    border-bottom: 1px solid #ffe600; 
+}
+
+.modal-title {
+    color: #ffe600; 
+}
+
+.btn-close {
+    background-color: transparent;
+    color: #ffe600; 
+}
+
+.btn-close:hover {
+    color: #ffcc00; 
+}
+
+.modal-footer .btn {
+    background-color: #ffe600; 
+    color: #232F3E; 
+}
+
+.modal-footer .btn-secondary {
+    background-color: #444; 
+    color: #ffffff; 
+}
+
+.modal-footer .btn-secondary:hover {
+    background-color: #555; 
+}
+
+.modal-body .form-label {
+    color: #ffffff; 
+}
+
+.modal-body .form-check-label {
+    color: #ffffff;
+}
