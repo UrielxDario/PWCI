@@ -74,10 +74,47 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['nombreProducto'], $_P
     
     $resultadoProducto = mysqli_query($conn, $queryProducto);
 
+   
     if ($resultadoProducto) {
         $idProducto = mysqli_insert_id($conn);
 
-        // Manejo de imágenes y videos (similar al original)
+        // Manejo de imágenes (requiere al menos 3 imágenes)
+        if (isset($_FILES['productImages'])) {
+            $imagenes = $_FILES['productImages'];
+    
+            // Comprobar que el array contiene más de un archivo
+            if (is_array($imagenes['tmp_name'])) {
+                foreach ($imagenes['tmp_name'] as $index => $imagenTmp) {
+                    // Convertir la imagen a formato BLOB
+                    $imagenBlob = file_get_contents($imagenTmp);
+                    $imagenBlob = mysqli_real_escape_string($conn, $imagenBlob);
+                    
+                    // Insertar cada imagen en la tabla Multimedia
+                    $queryImagen = "INSERT INTO Multimedia (Archivo, ID_PRODUCTO) VALUES ('$imagenBlob', $idProducto)";
+                    $resultadoImagen = mysqli_query($conn, $queryImagen);
+    
+                    if (!$resultadoImagen) {
+                        echo json_encode(['success' => false, 'error' => 'Error al insertar imagen']);
+                        exit();
+                    }
+                }
+            } else {
+                $imagenTmp = $imagenes['tmp_name'];
+                $imagenBlob = file_get_contents($imagenTmp);
+                $imagenBlob = mysqli_real_escape_string($conn, $imagenBlob);
+    
+                $queryImagen = "INSERT INTO Multimedia (Archivo, ID_PRODUCTO) VALUES ('$imagenBlob', $idProducto)";
+                $resultadoImagen = mysqli_query($conn, $queryImagen);
+    
+                if (!$resultadoImagen) {
+                    echo json_encode(['success' => false, 'error' => 'Error al insertar imagen']);
+                    exit();
+                }
+            }
+        }
+        
+
+        // Manejo del video (requiere un video)
         if (isset($_FILES['productVideo'])) {
             $videoTmp = $_FILES['productVideo']['tmp_name'];
             
@@ -93,13 +130,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['nombreProducto'], $_P
             }
         }
 
-        echo "<script> alert('Producto Creado con Éxito. Espere a que un administrador lo autorize');
+        echo "<script> alert('Producto Creado con Éxito');
             window.location.href = 'PublicarProducto.php';  // Redirige a la página de publicación
           </script>";
     } else {
         echo json_encode(['success' => false, 'error' => 'Error en la inserción del producto']);
     }
 }
+
 
 ?>
 
