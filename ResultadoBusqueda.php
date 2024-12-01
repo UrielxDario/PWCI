@@ -1,6 +1,7 @@
 <?php
-session_start(); 
+session_start();
 
+// Redirigir al login si no hay una sesión activa
 if (!isset($_SESSION['id_usuario'])) {
     header('Location: login.php');
     exit();
@@ -8,65 +9,72 @@ if (!isset($_SESSION['id_usuario'])) {
 
 $rol_usuario = $_SESSION['rol_usuario'];
 
-include 'conexionBaseDeDatos.php'; // Archivo con la conexión a la base de datos
+include 'conexionBaseDeDatos.php'; 
 
-// Variables para filtros
 $categoriaSeleccionada = $_GET['categoria'] ?? 'ninguno';
 $ordenSeleccionado = $_GET['orden'] ?? 'Default';
-
 $palabra = $_GET['textobusqueda'] ?? '';
 
-// Construcción de la consulta base
-$sql = "SELECT producto.ID_PRODUCTO, producto.NombreProducto, producto.PrecioProducto, producto.DescripcionProducto, 
-            categoría.NombreCategoria, multimedia.Archivo
-        FROM producto
-        INNER JOIN categoría ON producto.ID_CATEGORIA = categoría.ID_CATEGORIA
-        LEFT JOIN multimedia ON producto.ID_PRODUCTO = multimedia.ID_PRODUCTO";
+$sql = "(
+    SELECT 
+        producto.ID_PRODUCTO, 
+        producto.NombreProducto AS Titulo, 
+        producto.PrecioProducto AS Valor, 
+        producto.DescripcionProducto AS Detalle, 
+        producto.TipoProducto AS TipoDeProducto,
+        categoría.NombreCategoria AS Categoria, 
+        multimedia.Archivo AS ImgArchivo, 
+        NULL AS ImgPerfil, 
+        NULL AS Username, 
+        NULL AS NombreCompleto, 
+        NULL AS Rol
+    FROM producto
+    INNER JOIN categoría ON producto.ID_CATEGORIA = categoría.ID_CATEGORIA
+    LEFT JOIN multimedia ON producto.ID_PRODUCTO = multimedia.ID_PRODUCTO
+    WHERE producto.AutorizacionAdmin = 'Si' " . 
+    (!empty($palabra) ? "AND producto.NombreProducto LIKE '%$palabra%'" : "") . "
+    " . ($categoriaSeleccionada !== 'ninguno' ? "AND categoría.NombreCategoria = '$categoriaSeleccionada'" : "") . "
+    GROUP BY producto.ID_PRODUCTO
+)";
 
-
-$filtros = [];
-
-$filtros[] = "producto.AutorizacionAdmin = 'Si'";
-
-
-if (!empty($palabra)) {
-    $filtros[] = "producto.NombreProducto LIKE '%$palabra%'";
+// Si no se seleccionó una categoría, agregar los usuarios a la consulta
+if ($categoriaSeleccionada === 'ninguno') {
+    $sql .= " UNION
+    (
+        SELECT 
+            NULL AS ID_PRODUCTO,
+            NULL AS Titulo,
+            NULL AS Valor,
+            NULL AS Detalle,
+            NULL AS TipoDeProducto,
+            NULL AS Categoria,
+            NULL AS ImgArchivo,
+            usuario.ImgPerfil AS ImgPerfil,
+            usuario.Username AS Username,
+            CONCAT(usuario.Nombre, ' ', usuario.ApellidoPaterno, ' ', usuario.ApellidoMaterno) AS NombreCompleto,
+            usuario.Rol AS Rol
+        FROM usuario
+        WHERE 
+            usuario.Username LIKE '%$palabra%' OR 
+            usuario.Nombre LIKE '%$palabra%' OR 
+            usuario.ApellidoPaterno LIKE '%$palabra%' OR 
+            usuario.ApellidoMaterno LIKE '%$palabra%'
+    )";
 }
 
-// Filtrar por categoría
-if ($categoriaSeleccionada !== 'ninguno') {
-    $filtros[] = "categoría.NombreCategoria = '$categoriaSeleccionada'";
-}
-
-// Si hay filtros, agregarlos al WHERE
-if (!empty($filtros)) {
-    $sql .= " WHERE " . implode(" AND ", $filtros);
-}
-
-// Aplicar GROUP BY 
-$sql .= " GROUP BY producto.ID_PRODUCTO";
-
-// Filtrar por orden
 if ($ordenSeleccionado === 'precioAsc') {
-    $sql .= " ORDER BY producto.PrecioProducto ASC";
+    $sql .= " ORDER BY Valor ASC";
 } elseif ($ordenSeleccionado === 'precioDesc') {
-    $sql .= " ORDER BY producto.PrecioProducto DESC";
+    $sql .= " ORDER BY Valor DESC";
 }
-
 
 $result = $conn->query($sql);
 
-// Manejo de errores
 if (!$result) {
     die("Error en la consulta: " . $conn->error);
 }
 
-if ($conn->connect_error) {
-    die("Error de conexión: " . $conn->connect_error);
-}
-
 $productos = $result->fetch_all(MYSQLI_ASSOC);
-
 ?>
 
 <!DOCTYPE html>
@@ -216,34 +224,56 @@ $productos = $result->fetch_all(MYSQLI_ASSOC);
         </form>
     </div>
 
-    <div class="container mt-4">
-        <?php if (empty($productos)): ?>
-            <p>No se encontraron productos que coincidan con la búsqueda.</p>
-        <?php else: ?>
-            <?php foreach ($productos as $producto): ?>
-                <div class="row mb-4 producto">
-                    <div class="col-md-3">
-                    <img src="data:image/jpeg;base64,<?php echo base64_encode($producto['Archivo']); ?>" class="card-img-top imagen-producto" alt="Producto <?php echo htmlspecialchars($producto['NombreProducto']); ?>">
+  
     
+    <div class="container mt-4">
+    <?php if (empty($productos)): ?>
+        <p>No se encontraron productos que coincidan con la búsqueda.</p>
+    <?php else: ?>
+        <?php foreach ($productos as $producto): ?>
+            <div class="row mb-4 producto">
+                <div class="col-md-3">
+                    <?php if (!empty($producto['ImgPerfil'])): ?>
+                        <img src="img/<?php echo htmlspecialchars($producto['ImgPerfil']) ?: 'user.jpg'; ?>" class="card-img-top imagen-usuario" alt="Usuario <?php echo htmlspecialchars($producto['Username']); ?>">
+                    <?php else: ?>
+                        <img src="data:image/jpeg;base64,<?php echo base64_encode($producto['ImgArchivo']); ?>" class="card-img-top imagen-producto" alt="Producto <?php echo htmlspecialchars($producto['Titulo']); ?>">
+                    <?php endif; ?>
                 </div>
-                    <div class="col-md-9">
-                        <div class="d-flex justify-content-between">
-                            <div>
-                                <h4><?= $producto['NombreProducto'] ?></h4>
-                                <p><?= $producto['NombreCategoria'] ?></p>
-                                <p>Descipcion: <?= $producto['DescripcionProducto'] ?></p>
-                                
-                            </div>
-                            <div class="text-end">
-                                <p class="h5 precio-pesos">$<?= number_format($producto['PrecioProducto'], 2) ?>MXN</p>
-                                <p class="h5 precio-dolares" data-precio="<?= $producto['PrecioProducto'] ?>">USD</p>
-                            </div>
+                <div class="col-md-9">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <?php if (!empty($producto['Username'])): ?>
+                                <!-- Si es un usuario -->
+                                <h4><?= htmlspecialchars($producto['Username']) ?></h4>
+                                <p><strong>Nombre Completo:</strong> <?= htmlspecialchars($producto['NombreCompleto']) ?></p>
+                                <p><strong>Rol:</strong> <?= htmlspecialchars($producto['Rol']) ?></p>
+                            <?php else: ?>
+                                <!-- Si es un producto -->
+                                <h4><?= htmlspecialchars($producto['Titulo']) ?></h4>
+                                <p><strong>Categoría:</strong> <?= htmlspecialchars($producto['Categoria']) ?></p>
+                                <p><strong>Descripción:</strong> <?= htmlspecialchars($producto['Detalle']) ?></p>
+                            <?php endif; ?>
                         </div>
+                        
+                        <?php if (empty($producto['Username'])): ?>
+                            <div class="text-end">
+                                <?php if ($producto['TipoDeProducto'] === 'Para Cotizar'): ?>
+                                    <p class="h5">Para Cotización</p>
+                                <?php else: ?>
+                                    <p class="h5 precio-pesos">$<?= number_format($producto['Valor'], 2) ?> MXN</p>
+                                    <p class="h5 precio-dolares" data-precio="<?= $producto['Valor'] ?>">USD</p>
+                                <?php endif; ?>
+                            </div>
+                        <?php endif; ?>
                     </div>
                 </div>
-            <?php endforeach; ?>
-        <?php endif; ?>
-    </div>
+            </div>
+        <?php endforeach; ?>
+    <?php endif; ?>
+</div>
+
+
+
 
 
     <script>

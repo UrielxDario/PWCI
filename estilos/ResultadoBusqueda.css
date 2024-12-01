@@ -89,6 +89,11 @@ p {
 }
 
 
+.imagen-usuario, .imagen-producto{
+    width: 300px;
+    height: 300px;
+}
+
 
 
 
