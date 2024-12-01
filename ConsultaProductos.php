@@ -217,7 +217,7 @@ $conn->close();
                             <div class="card-body cuerpo-producto">
                                 <h5 class="card-title titulo-producto"><?php echo htmlspecialchars($producto['nombre_producto']); ?></h5>
                                 <p class="card-text precio-producto precio-pesos"> $<?php echo number_format($producto['PrecioProducto'], 2); ?>MXN</p>
-                                <p class="card-text precio-producto precio-dolares " data-precio=" <?php echo $producto['PrecioProducto']; ?> "> USD</p>
+                                <p class="card-text precio-producto precio-dolares" data-precio="<?php echo $producto['PrecioProducto']; ?>"> USD</p>
                                 
                                 <p class="card-text cantidad-producto">Cantidad Disponible: <?php echo htmlspecialchars($producto['CantidadProducto']); ?></p>
                                 

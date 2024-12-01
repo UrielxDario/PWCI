@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const conversionRate = data.conversion_rate;
 
             preciosDolares.forEach((elemento) => {
-                const precioPesos = parseFloat(elemento.dataset.precio);
+                const precioPesos = parseFloat(elemento.dataset.precio.trim()); 
                 const precioUSD = (precioPesos * conversionRate).toFixed(2);
                 elemento.textContent = `USD: $${precioUSD}`;
             });

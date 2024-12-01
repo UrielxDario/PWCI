@@ -26,6 +26,9 @@ $sql = "SELECT producto.ID_PRODUCTO, producto.NombreProducto, producto.PrecioPro
 
 $filtros = [];
 
+$filtros[] = "producto.AutorizacionAdmin = 'Si'";
+
+
 if (!empty($palabra)) {
     $filtros[] = "producto.NombreProducto LIKE '%$palabra%'";
 }
@@ -232,8 +235,8 @@ $productos = $result->fetch_all(MYSQLI_ASSOC);
                                 
                             </div>
                             <div class="text-end">
-                                <p class="h5 precio-pesos">$<?= $producto['PrecioProducto'] ?>MXN</p>
-                                <p class="h5 precio-dolares" data-precio="<?= number_format($producto['PrecioProducto'], 2) ?>">USD</p>
+                                <p class="h5 precio-pesos">$<?= number_format($producto['PrecioProducto'], 2) ?>MXN</p>
+                                <p class="h5 precio-dolares" data-precio="<?= $producto['PrecioProducto'] ?>">USD</p>
                             </div>
                         </div>
                     </div>
