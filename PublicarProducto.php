@@ -130,7 +130,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['nombreProducto'], $_P
             }
         }
 
-        echo "<script> alert('Producto Creado con Éxito');
+        echo "<script> alert('Producto cargado con Éxito. Espere a que un administrador autorize su producto para publicarlo');
             window.location.href = 'PublicarProducto.php';  // Redirige a la página de publicación
           </script>";
     } else {
