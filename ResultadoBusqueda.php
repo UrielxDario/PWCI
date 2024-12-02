@@ -243,13 +243,15 @@ $productos = $result->fetch_all(MYSQLI_ASSOC);
                     <div class="d-flex justify-content-between">
                         <div>
                             <?php if (!empty($producto['Username'])): ?>
-                                <!-- Si es un usuario -->
                                 <h4><?= htmlspecialchars($producto['Username']) ?></h4>
                                 <p><strong>Nombre Completo:</strong> <?= htmlspecialchars($producto['NombreCompleto']) ?></p>
                                 <p><strong>Rol:</strong> <?= htmlspecialchars($producto['Rol']) ?></p>
                             <?php else: ?>
-                                <!-- Si es un producto -->
-                                <h4><?= htmlspecialchars($producto['Titulo']) ?></h4>
+                                <h4>
+                                    <a class= "linkver" href="VerProducto.php?id_producto=<?= htmlspecialchars($producto['ID_PRODUCTO']) ?>">
+                                        <?= htmlspecialchars($producto['Titulo']) ?>
+                                    </a>
+                                </h4>
                                 <p><strong>Categoría:</strong> <?= htmlspecialchars($producto['Categoria']) ?></p>
                                 <p><strong>Descripción:</strong> <?= htmlspecialchars($producto['Detalle']) ?></p>
                             <?php endif; ?>
