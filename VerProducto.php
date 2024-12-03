@@ -10,16 +10,13 @@ $rol_usuario = $_SESSION['rol_usuario'];
  
 include 'conexionBaseDeDatos.php';  
 
-// Validar el parámetro `id_producto`
 if (isset($_GET['id_producto']) && is_numeric($_GET['id_producto'])) {
     $id_producto = intval($_GET['id_producto']);
 } else {
-    // Si no se pasa un ID válido, redirige a otra página o muestra un error
     header('Location: home.php');
     exit();
 }
 
-// Consultar datos del producto
 $query = "SELECT p.NombreProducto, p.PrecioProducto, p.DescripcionProducto, p.CantidadProducto 
           FROM producto p 
           WHERE p.ID_PRODUCTO = ?";
@@ -35,7 +32,6 @@ if ($result->num_rows > 0) {
     exit();
 }
 
-// Consultar imágenes relacionadas al producto
 $query_imagenes = "SELECT Archivo FROM multimedia WHERE ID_PRODUCTO = ? ORDER BY ID_MULTIMEDIA ASC";
 $stmt_imagenes = $conn->prepare($query_imagenes);
 $stmt_imagenes->bind_param("i", $id_producto);
@@ -47,9 +43,8 @@ while ($row = $result_imagenes->fetch_assoc()) {
     $imagenes[] = $row['Archivo'];
 }
 
-// Si no hay imágenes, agregar una predeterminada
 if (empty($imagenes)) {
-    $imagenes[] = "img/user.jpg"; // Imagen predeterminada
+    $imagenes[] = "img/user.jpg"; 
 }
 ?>
 
@@ -94,7 +89,6 @@ if (empty($imagenes)) {
                             <li><a class="dropdown-item" href="ConsultaProductos.php">Ver Mis Productos</a></li>
                         <?php else: ?>
                             <li><a class="dropdown-item" href="HistorialDeCompras.php">Historial de Compras</a></li>
-                            <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#createListModal">Crear lista</a></li>
                             <li><a class="dropdown-item" href="listas.php">Mis listas</a></li>
                         <?php endif; ?>
 
@@ -114,36 +108,7 @@ if (empty($imagenes)) {
         </div>
     </nav>
 
-    <div class="modal fade" id="createListModal" tabindex="-1" aria-labelledby="createListModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content" style = "color:black">
-            <div class="modal-header">
-                <h5 class="modal-title" id="createListModalLabel">Crear Lista</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form id="createListForm">
-                    <div class="mb-3">
-                        <label for="listName" class="form-label">Nombre de la lista</label>
-                        <input type="text" class="form-control" id="listName" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="listDescription" class="form-label">Descripción</label>
-                        <textarea class="form-control" id="listDescription" required></textarea>
-                    </div>
-                    <div class="form-check mb-3">
-                        <input class="form-check-input" type="checkbox" id="isPublic">
-                        <label class="form-check-label" for="isPublic">¿Cualquiera puede ver la lista?</label>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                <button type="button" class="btn btn-primary" onclick="createList()">Crear Lista</button>
-            </div>
-        </div>
-    </div>
-</div>
+   
 
   <!-- PARA CREAR UNA CATEGORIA SE ABRE ESTA VENTANA-->
   <div class="modal fade" id="crearcategoria" tabindex="-1" aria-labelledby="crearcategoriaLabel" aria-hidden="true">
@@ -174,9 +139,11 @@ if (empty($imagenes)) {
 </div>
 
     <!-- Contenedor principal del producto -->
+    <div id="producto" data-id="<?php echo $id_producto; ?>">
+    </div>
+    
     <div class="container mt-5 p-4">
         <div class="row">
-            <!-- Columna izquierda: carrusel de imágenes y video -->
             <div class="col-md-6">
                 <!-- Carrusel -->
                 <div id="productoCarrusel" class="carousel slide" data-bs-ride="carousel">
@@ -184,19 +151,16 @@ if (empty($imagenes)) {
                         <?php foreach ($imagenes as $index => $archivo): ?>
                             <div class="carousel-item <?php echo $index === 0 ? 'active' : ''; ?>">
                                 <?php if ($index === count($imagenes) - 1): ?>
-                                    <!-- Última entrada es el video -->
                                     <video class="d-block w-100" controls>
                                         <source src="data:video/mp4;base64,<?php echo base64_encode($archivo); ?>" type="video/mp4">
                                         Tu navegador no soporta el video.
                                     </video>
                                 <?php else: ?>
-                                    <!-- Imágenes -->
                                     <img src="data:image/jpeg;base64,<?php echo base64_encode($archivo); ?>" class="d-block w-100" alt="Imagen <?php echo $index + 1; ?>">
                                 <?php endif; ?>
                             </div>
                         <?php endforeach; ?>
                     </div>
-                    <!-- Flechas de navegación -->
                     <button class="carousel-control-prev" type="button" data-bs-target="#productoCarrusel" data-bs-slide="prev">
                         <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                         <span class="visually-hidden">Anterior</span>
@@ -216,7 +180,6 @@ if (empty($imagenes)) {
                 <h3 class="text-warning">$<?php echo number_format($producto['PrecioProducto'], 2); ?></h3>
                 <p>Cantidad disponible en stock: <span class="text-success"><?php echo $producto['CantidadProducto']; ?> unidades</span></p>
                 <p>Descripción del producto: <?php echo htmlspecialchars($producto['DescripcionProducto']); ?></p>
-                <!-- Comentarios del producto -->
                 <h5>Comentarios</h5>
                 <div class="container border p-2 mb-2">
                     <p><strong>Cliente 1</strong> - Me gustó</p>
@@ -234,16 +197,38 @@ if (empty($imagenes)) {
                 <!-- Contador de cantidad -->
                 <div class="mt-3">
                     <label for="cantidad" class="form-label">Cantidad:</label>
-                    <input type="number" id="cantidad" class="form-control w-25" value="1" min="1" max="20">
+                    <input type="number" id="cantidad" class="form-control w-25" value="1" min="1" max="<?php echo $producto['CantidadProducto']; ?>"
                 </div>                    
                 <!-- Botones de acción -->
                 <div class="mt-4">
                     <button class="btn btn-warning w-100 mb-2">Agregar al carrito</button>
-                    <button class="btn btn-secondary w-100">Agregar a una lista</button>
-                </div>
+                    <button class="btn btn-secondary w-100" id="abrirModalListasBtn">Agregar a una lista</button>
+                    </div>
             </div>
         </div>
     </div>
+
+
+    <!-- Modal para seleccionar una lista -->
+    <div class="modal fade" id="modalListas" tabindex="-1" aria-labelledby="modalListasLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title" id="modalListasLabel">Selecciona una lista</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+            <select id="listaSeleccionada" class="form-select">
+            </select>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="button" class="btn btn-primary" id="confirmarAgregarListaBtn">Agregar a la lista</button>
+        </div>
+        </div>
+    </div>
+    </div>
+
 
     <!-- Scripts de Bootstrap -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>

@@ -1,13 +1,39 @@
 <?php
-session_start(); 
+session_start();
 
 if (!isset($_SESSION['id_usuario'])) {
-    header('Location: login.php');
+    header('Content-Type: application/json');
+    echo json_encode(['error' => 'Usuario no autenticado']);
     exit();
 }
 
 $rol_usuario = $_SESSION['rol_usuario'];
+
+
+require 'conexionBaseDeDatos.php';
+
+if (isset($_GET['action']) && $_GET['action'] === 'fetch') {
+    $id_usuario = $_SESSION['id_usuario'];
+    $sql = "SELECT ID_LISTA, NombreLista, PrivacidadLista 
+            FROM Lista 
+            WHERE ID_USUARIO = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param('i', $id_usuario);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    $listas = [];
+    while ($row = $result->fetch_assoc()) {
+        $listas[] = $row;
+    }
+
+    header('Content-Type: application/json');
+    echo json_encode($listas);
+    exit();
+}
 ?>
+
+
 
 <!DOCTYPE html>
 <html lang="es">
@@ -48,7 +74,6 @@ $rol_usuario = $_SESSION['rol_usuario'];
                             <li><a class="dropdown-item" href="ConsultaProductos.php">Ver Mis Productos</a></li>
                         <?php else: ?>
                             <li><a class="dropdown-item" href="HistorialDeCompras.php">Historial de Compras</a></li>
-                            <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#createListModal">Crear lista</a></li>
                             <li><a class="dropdown-item" href="listas.php">Mis listas</a></li>
                         <?php endif; ?>
 
@@ -68,6 +93,7 @@ $rol_usuario = $_SESSION['rol_usuario'];
         </div>
     </nav>
 
+     <!-- PARA CREAR UNA LISTA SE ABRE ESTA VENTANA-->
     <div class="modal fade" id="createListModal" tabindex="-1" aria-labelledby="createListModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content" style = "color:black">
@@ -93,7 +119,7 @@ $rol_usuario = $_SESSION['rol_usuario'];
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                <button type="button" class="btn btn-primary" onclick="createList()">Crear Lista</button>
+                <button type="button" class="btn btn-primary" onclick="crearLista()">Crear Lista</button>
             </div>
         </div>
     </div>
@@ -127,43 +153,28 @@ $rol_usuario = $_SESSION['rol_usuario'];
     </div>
 </div>
 
+ <!-- PARA CREAR UNA LISTA SE ABRE ESTA VENTANA-->
 
-
-    <div class="container mt-5">
+<div class="container mt-5">
         <h1 class="text-center">Mis Listas</h1>
         <div class="row">
-            <!-- Lista de Listas -->
             <div class="col-md-4">
                 <h3>Listas</h3>
-                <ul class="list-group">
-                    <li class="list-group-item">
-                        <strong>Lista de Zapatos</strong> 
-                        <span class="badge bg-success">Pública</span>
-                    </li>
-                    <li class="list-group-item">
-                        <strong>Lista de Ropa</strong>
-                        <span class="badge bg-warning">Privada</span>
-                    </li>
-                    
+                <ul class="list-group" id="listas">
                 </ul>
+                <button class="btn btn-warning mt-3 w-100" data-bs-toggle="modal" data-bs-target="#createListModal">
+                    Crear Nueva Lista
+                </button>
             </div>
-
-            <!-- Productos en la lista seleccionada -->
             <div class="col-md-8">
                 <h3>Productos en la Lista</h3>
                 <div id="productList">
-                    <div class="card mb-3">
-                        <div class="card-body">
-                            <h5 class="card-title">Nombre del Producto</h5>
-                            <p class="card-text">Descripción del producto.</p>
-                            <p class="card-text"><strong>Precio: $XX.XX</strong></p>
-                        </div>
-                    </div>
-                    
                 </div>
             </div>
         </div>
     </div>
+
+
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="listas.js"></script>

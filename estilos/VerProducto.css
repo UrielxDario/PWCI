@@ -200,11 +200,12 @@ p {
 
 
 /* Video del carrusel */
-.carousel-inner video {
-    max-height: 400px;  
-    width: 100%;        
-    object-fit: cover; 
-}
+.carousel-item img, 
+    .carousel-item video {
+        width: 100%;
+        height: 400px; 
+        object-fit: contain; 
+    }
 
 /* Miniaturas de imágenes */
 .img-thumbnail {
