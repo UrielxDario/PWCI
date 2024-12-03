@@ -49,7 +49,6 @@ $rol_usuario = $_SESSION['rol_usuario'];
                             <li><a class="dropdown-item" href="ConsultaProductos.php">Ver Mis Productos</a></li>
                         <?php else: ?>
                             <li><a class="dropdown-item" href="HistorialDeCompras.php">Historial de Compras</a></li>
-                            <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#createListModal">Crear lista</a></li>
                             <li><a class="dropdown-item" href="listas.php">Mis listas</a></li>
                         <?php endif; ?>
 
@@ -69,36 +68,7 @@ $rol_usuario = $_SESSION['rol_usuario'];
         </div>
     </nav>
 
-    <div class="modal fade" id="createListModal" tabindex="-1" aria-labelledby="createListModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content" style = "color:black">
-            <div class="modal-header">
-                <h5 class="modal-title" id="createListModalLabel">Crear Lista</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form id="createListForm">
-                    <div class="mb-3">
-                        <label for="listName" class="form-label">Nombre de la lista</label>
-                        <input type="text" class="form-control" id="listName" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="listDescription" class="form-label">Descripción</label>
-                        <textarea class="form-control" id="listDescription" required></textarea>
-                    </div>
-                    <div class="form-check mb-3">
-                        <input class="form-check-input" type="checkbox" id="isPublic">
-                        <label class="form-check-label" for="isPublic">¿Cualquiera puede ver la lista?</label>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                <button type="button" class="btn btn-primary" onclick="createList()">Crear Lista</button>
-            </div>
-        </div>
-    </div>
-</div>
+    
 
     <!-- PARA CREAR UNA CATEGORIA SE ABRE ESTA VENTANA-->
     <div class="modal fade" id="crearcategoria" tabindex="-1" aria-labelledby="crearcategoriaLabel" aria-hidden="true">
