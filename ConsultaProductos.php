@@ -37,6 +37,7 @@ $sql = "SELECT
 
 if ($categoriaSeleccionada !== 'todas') {
     $sql .= " AND p.ID_CATEGORIA = ? ";
+    $sql .= " GROUP BY p.ID_PRODUCTO";
 } else {
     $sql .= " GROUP BY p.ID_PRODUCTO";
 }
