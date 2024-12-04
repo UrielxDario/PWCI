@@ -17,7 +17,7 @@ if (isset($_GET['id_producto']) && is_numeric($_GET['id_producto'])) {
     exit();
 }
 
-$query = "SELECT p.NombreProducto, p.PrecioProducto, p.DescripcionProducto, p.CantidadProducto 
+$query = "SELECT p.NombreProducto, p.PrecioProducto, p.DescripcionProducto, p.CantidadProducto, p.TipoProducto, p.ID_USUARIO as ID_Vendedor
           FROM producto p 
           WHERE p.ID_PRODUCTO = ?";
 $stmt = $conn->prepare($query);
@@ -201,7 +201,14 @@ if (empty($imagenes)) {
                 </div>                    
                 <!-- Botones de acción -->
                 <div class="mt-4">
-                    <button class="btn btn-warning w-100 mb-2">Agregar al carrito</button>
+                    <?php if ($producto['TipoProducto'] === 'Para Cotizar'): ?>
+                        <!-- Botón de mensaje al vendedor -->
+                        <a href="inicioChat.php?id_vendedor=<?php echo $producto['ID_Vendedor']; ?>" class="btn btn-secondary w-100">Enviar mensaje al vendedor</a> <br>
+                    <?php else: ?>
+                        <!-- Botón de agregar al carrito -->
+                        <button class="btn btn-warning w-100 mb-2">Agregar al carrito</button>
+                    <?php endif; ?>
+                    <br>
                     <button class="btn btn-secondary w-100" id="abrirModalListasBtn">Agregar a una lista</button>
                 </div>
             </div>
