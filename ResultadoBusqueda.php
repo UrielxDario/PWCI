@@ -17,7 +17,8 @@ $palabra = $_GET['textobusqueda'] ?? '';
 
 $sql = "(
     SELECT 
-        producto.ID_PRODUCTO, 
+        producto.ID_PRODUCTO,
+        NULL AS ID_USUARIO, 
         producto.NombreProducto AS Titulo, 
         producto.PrecioProducto AS Valor, 
         producto.DescripcionProducto AS Detalle, 
@@ -41,8 +42,9 @@ $sql = "(
 if ($categoriaSeleccionada === 'ninguno') {
     $sql .= " UNION
     (
-        SELECT 
+        SELECT
             NULL AS ID_PRODUCTO,
+            usuario.ID_USUARIO AS ID_USUARIO,
             NULL AS Titulo,
             NULL AS Valor,
             NULL AS Detalle,
@@ -55,10 +57,12 @@ if ($categoriaSeleccionada === 'ninguno') {
             usuario.Rol AS Rol
         FROM usuario
         WHERE 
-            usuario.Username LIKE '%$palabra%' OR 
-            usuario.Nombre LIKE '%$palabra%' OR 
-            usuario.ApellidoPaterno LIKE '%$palabra%' OR 
-            usuario.ApellidoMaterno LIKE '%$palabra%'
+            usuario.ID_USUARIO != {$_SESSION['id_usuario']} AND (
+                usuario.Username LIKE '%$palabra%' OR 
+                usuario.Nombre LIKE '%$palabra%' OR 
+                usuario.ApellidoPaterno LIKE '%$palabra%' OR 
+                usuario.ApellidoMaterno LIKE '%$palabra%'
+            )
     )";
 }
 
@@ -212,8 +216,12 @@ $productos = $result->fetch_all(MYSQLI_ASSOC);
                 <div class="col-md-9">
                     <div class="d-flex justify-content-between">
                         <div>
-                            <?php if (!empty($producto['Username'])): ?>
-                                <h4><?= htmlspecialchars($producto['Username']) ?></h4>
+                            <?php if (!empty($producto['ID_USUARIO'])): ?>
+                                <h4>
+                                <a class="linkver" href="perfil.php?id_usuario=<?= htmlspecialchars($producto['ID_USUARIO']) ?>">
+                                        <?= htmlspecialchars($producto['Username']) ?>
+                                    </a>
+                                </h4>
                                 <p><strong>Nombre Completo:</strong> <?= htmlspecialchars($producto['NombreCompleto']) ?></p>
                                 <p><strong>Rol:</strong> <?= htmlspecialchars($producto['Rol']) ?></p>
                             <?php else: ?>

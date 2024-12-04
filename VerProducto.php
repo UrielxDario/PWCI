@@ -203,7 +203,7 @@ if (empty($imagenes)) {
                 <div class="mt-4">
                     <button class="btn btn-warning w-100 mb-2">Agregar al carrito</button>
                     <button class="btn btn-secondary w-100" id="abrirModalListasBtn">Agregar a una lista</button>
-                    </div>
+                </div>
             </div>
         </div>
     </div>

@@ -10,6 +10,47 @@ if (!isset($_SESSION['id_usuario'])) {
 $rol_usuario = $_SESSION['rol_usuario'];
 $id_usuario = $_SESSION['id_usuario']; // El ID del usuario (cliente o vendedor)
 
+// Manejar la creación o redirección de chats basados en id_usuario
+if (isset($_GET['id_vendedor'])) {
+    $id_otro_usuario = $_GET['id_vendedor'];
+    
+    // Determinar roles según el usuario actual
+    if ($rol_usuario === 'Cliente') {
+        $query_chat = "SELECT ID_Chat FROM Chat WHERE ID_Cliente = ? AND ID_Vendedor = ?";
+        $stmt_chat = $conn->prepare($query_chat);
+        $stmt_chat->bind_param('ii', $id_usuario, $id_otro_usuario);
+    } else if ($rol_usuario === 'Vendedor') {
+        $query_chat = "SELECT ID_Chat FROM Chat WHERE ID_Vendedor = ? AND ID_Cliente = ?";
+        $stmt_chat = $conn->prepare($query_chat);
+        $stmt_chat->bind_param('ii', $id_usuario, $id_otro_usuario);
+    }
+
+    $stmt_chat->execute();
+    $result_chat = $stmt_chat->get_result();
+
+    if ($result_chat->num_rows > 0) {
+        // El chat ya existe, redirigir al ID del chat
+        $chat_existente = $result_chat->fetch_assoc();
+        header("Location: chat.php?id_chat=" . $chat_existente['ID_Chat']);
+        exit();
+    } else {
+        // El chat no existe, crearlo
+        if ($rol_usuario === 'Cliente') {
+            $query_insert_chat = "INSERT INTO Chat (ID_Cliente, ID_Vendedor, FechaInicio) VALUES (?, ?, NOW())";
+        } else if ($rol_usuario === 'Vendedor') {
+            $query_insert_chat = "INSERT INTO Chat (ID_Vendedor, ID_Cliente, FechaInicio) VALUES (?, ?, NOW())";
+        }
+
+        $stmt_insert_chat = $conn->prepare($query_insert_chat);
+        $stmt_insert_chat->bind_param('ii', $id_usuario, $id_otro_usuario);
+        $stmt_insert_chat->execute();
+
+        // Obtener el ID del chat recién creado
+        $nuevo_id_chat = $conn->insert_id;
+        header("Location: chat.php?id_chat=" . $nuevo_id_chat);
+        exit();
+    }
+}
 // Si el usuario es cliente, muestra los chats con los vendedores
 if ($rol_usuario === 'Cliente') {
     $query = "SELECT c.ID_Chat, u.Username AS Vendedor
@@ -135,15 +176,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['mensaje'])) {
             <div class="col-md-9">
                 <?php if (isset($mensajes)): ?>
                     <div class="contenedor-mensajes">
-                        <?php while ($mensaje = $mensajes->fetch_assoc()): ?>
-                            <div class="mensaje <?= ($mensaje['Rol'] == 'Cliente') ? 'cliente' : 'vendedor'; ?>">
-                                <img src="img/<?= $mensaje['Imagen']; ?>" alt="<?= $mensaje['Usuario']; ?>">
-                                <div class="contenido-mensaje">
-                                    <p><?= $mensaje['TextoMensaje']; ?></p>
-                                    <span class="marca-tiempo"><?= $mensaje['HoraFechaMensaje']; ?></span>
+                        <?php if ($mensajes->num_rows > 0): ?>
+                            <?php while ($mensaje = $mensajes->fetch_assoc()): ?>
+                                <div class="mensaje <?= ($mensaje['Rol'] == 'Cliente') ? 'cliente' : 'vendedor'; ?>">
+                                    <img src="img/<?= htmlspecialchars($mensaje['Imagen']); ?>" alt="<?= htmlspecialchars($mensaje['Usuario']); ?>">
+                                    <div class="contenido-mensaje">
+                                        <p><?= htmlspecialchars($mensaje['TextoMensaje']); ?></p>
+                                        <span class="marca-tiempo"><?= htmlspecialchars($mensaje['HoraFechaMensaje']); ?></span>
+                                    </div>
                                 </div>
+                            <?php endwhile; ?>
+                        <?php else: ?>
+                            <div class="alert alert-info" role="alert">
+                                Aún no hay mensajes en esta conversación. ¡Escribe el primero!
                             </div>
-                        <?php endwhile; ?>
+                        <?php endif; ?>
                     </div>
 
                     <!-- Enviar Nuevo Mensaje -->
