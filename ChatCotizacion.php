@@ -1,12 +1,46 @@
 <?php
-session_start(); 
+include 'conexionBaseDeDatos.php';
+session_start();
 
+// Verificar si el usuario está logueado
 if (!isset($_SESSION['id_usuario'])) {
-    header('Location: login.php');
+    header("Location: login.php");
     exit();
 }
 
-$rol_usuario = $_SESSION['rol_usuario'];
+$id_usuario = $_SESSION['id_usuario']; // El ID del usuario logueado
+
+// Obtener el rol del usuario
+$query_rol = "SELECT Rol FROM Usuario WHERE ID_USUARIO = ?";
+$stmt_rol = $conn->prepare($query_rol);
+$stmt_rol->bind_param('i', $id_usuario);
+$stmt_rol->execute();
+$result_rol = $stmt_rol->get_result();
+$rol_usuario = $result_rol->fetch_assoc()['Rol'];
+
+// Consulta para obtener los chats dependiendo del rol
+if ($rol_usuario === 'Cliente') {
+    // Si el usuario es cliente, obtener chats donde él sea el cliente
+    $query = "SELECT c.ID_Chat, u.Username AS Vendedor
+              FROM Chat c
+              JOIN Usuario u ON c.ID_Vendedor = u.ID_USUARIO
+              WHERE c.ID_Cliente = ? 
+              ORDER BY c.FechaInicio DESC";
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param('i', $id_usuario);
+} else {
+    // Si el usuario es vendedor, obtener chats donde él sea el vendedor
+    $query = "SELECT c.ID_Chat, u.Username AS Cliente
+              FROM Chat c
+              JOIN Usuario u ON c.ID_Cliente = u.ID_USUARIO
+              WHERE c.ID_Vendedor = ? 
+              ORDER BY c.FechaInicio DESC";
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param('i', $id_usuario);
+}
+
+$stmt->execute();
+$result = $stmt->get_result();
 ?>
 
 <!DOCTYPE html>
@@ -15,7 +49,7 @@ $rol_usuario = $_SESSION['rol_usuario'];
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat Cotizacion</title>
+    <title>Ver y crear Chats</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="estilos/ChatCotizacion.css" rel="stylesheet">
 </head>
@@ -99,59 +133,35 @@ $rol_usuario = $_SESSION['rol_usuario'];
     </div>
 </div>
 
-    <!-- Contenido del Chat -->
-    <header class="container my-4">
-        <h2 id="titulo-chat">Mensajes Privados - Cotizaciones de Productos</h2>
-        <p>Conversación entre Cliente y Vendedor</p>
-    </header>
-
-    <div class="container">
-    <div class="row">
-        <!-- Lista de Vendedores / Cotizaciones -->
-        <div class="col-md-3">
-            <h4>Vendedores / Cotizaciones</h4>
-            <ul class="list-group">
-                <li class="list-group-item">
-                    <a href="#" class="vendedor-enlace">Walter White- Cotización de Camisa Negra</a>
-                </li>
-                <li class="list-group-item">
-                    <a href="#" class="vendedor-enlace">Peter Parker - Cotización de Mochila Personalizada</a>
-                </li>
-                <li class="list-group-item">
-                    <a href="#" class="vendedor-enlace">Miles Morales- Cotización de Sneakers Pintados</a>
-                </li>
-            </ul>
-        </div>
-
-        <!-- Mensajes -->
-        <div class="col-md-9">
-            <div class="contenedor-mensajes">
-                <!-- Mensaje del Cliente -->
-                <div class="mensaje cliente">
-                    <img src="img/Dui.jpg" alt="Cliente">
-                    <div class="contenido-mensaje">
-                        <p>Hola Mr. White, estoy interesado en el precio de la camisa.</p>
-                        <span class="marca-tiempo">23/09/2024 10:15</span>
-                    </div>
-                </div>
-
-                <!-- Mensaje del Vendedor -->
-                <div class="mensaje vendedor">
-                    <img src="img/Walter.jpg" alt="Vendedor">
-                    <div class="contenido-mensaje">
-                        <p>Claro Jesse, la camisa cuesta $420. ¿Le interesa algún otro producto? Guiño Guiño</p>
-                        <span class="marca-tiempo">23/09/2024 10:20</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Enviar Nuevo Mensaje -->
-            <div class="enviar-mensaje">
-                <textarea class="form-control" rows="3" placeholder="Escribe tu mensaje aquí..."></textarea>
-                <button class="btn btn-enviar">Enviar</button>
-            </div>
-        </div>
+<div class="container mt-4">
+    <h3>Mis Chats</h3>
+    
+    <div class="list-group">
+            <?php while ($chat = $result->fetch_assoc()): ?>
+                <a href="chat.php?id_chat=<?= $chat['ID_Chat'] ?>" class="list-group-item list-group-item-action">
+                    Chat con: <?= htmlspecialchars($chat[$rol_usuario === 'Cliente' ? 'Vendedor' : 'Cliente']) ?>
+                </a>
+            <?php endwhile; ?>
     </div>
+
+    <hr>
+    <h5>Iniciar un nuevo chat</h5>
+    <form action="inicioChat.php" method="GET">
+        <div class="mb-3">
+            <label for="id_vendedor" class="form-label">Selecciona un vendedor</label>
+            <select class="form-select" name="id_vendedor" required>
+                <?php
+                // Lista de vendedores disponibles para iniciar chat
+                $query_vendedores = "SELECT ID_USUARIO, Username FROM Usuario WHERE Rol = 'Vendedor'";
+                $result_vendedores = $conn->query($query_vendedores);
+                while ($vendedor = $result_vendedores->fetch_assoc()):
+                ?>
+                    <option value="<?= $vendedor['ID_USUARIO'] ?>"><?= htmlspecialchars($vendedor['Username']) ?></option>
+                <?php endwhile; ?>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-warning">Iniciar Chat</button>
+    </form>
 </div>
 
     <!-- Enlace a Bootstrap JS -->
