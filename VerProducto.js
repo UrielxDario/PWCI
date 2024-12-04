@@ -66,6 +66,7 @@ document.getElementById('abrirModalListasBtn').addEventListener('click', functio
 });
 
 
+//Para agregar el producto a la lista
 document.getElementById('confirmarAgregarListaBtn').addEventListener('click', function() {
     const listaSeleccionada = document.getElementById('listaSeleccionada');
     const listaNombre = listaSeleccionada.options[listaSeleccionada.selectedIndex].getAttribute('data-nombre');
@@ -98,5 +99,36 @@ document.getElementById('confirmarAgregarListaBtn').addEventListener('click', fu
     .catch(error => {
         console.error('Error:', error);
         alert('Error al agregar el producto a la lista.');
+    });
+});
+
+
+
+//Para agregar el producto al carrito
+document.getElementById('agregarCarritoBtn').addEventListener('click', function() {
+    const idProducto = document.getElementById('producto').getAttribute('data-id');
+    const cantidad = parseInt(document.getElementById('cantidad').value);
+
+    if (cantidad <= 0) {
+        alert("Por favor, selecciona una cantidad válida.");
+        return;
+    }
+
+    fetch('AgregarProductoACarrito.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id_producto: idProducto, cantidad: cantidad })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert("Producto agregado al carrito exitosamente.");
+        } else {
+            alert("Error al agregar producto al carrito: " + data.message);
+        }
+    })
+    .catch(error => {
+        console.error("Error en la solicitud:", error);
+        alert("Ocurrió un error al agregar el producto.");
     });
 });
