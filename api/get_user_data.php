@@ -1,7 +1,11 @@
 <?php
 // Asumiendo que ya tienes la sesión iniciada y puedes obtener el ID del usuario
 session_start();
-$user_id = $_SESSION['id_usuario'];
+
+// Si existe un ID_USUARIO en la URL, usamos ese ID. Si no, usamos el ID del usuario que está en sesión.
+$user_id = isset($_GET['id_usuario']) ? $_GET['id_usuario'] : $_SESSION['id_usuario'];
+
+//$user_id = $_SESSION['id_usuario']; 
 
 include '../conexionBaseDeDatos.php'; // Archivo que conecta con la base de datos
 

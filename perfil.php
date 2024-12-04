@@ -7,6 +7,7 @@ if (!isset($_SESSION['id_usuario'])) {
 }
 
 $rol_usuario = $_SESSION['rol_usuario'];
+$user_id = $_SESSION['id_usuario'];
 ?>
 
 
