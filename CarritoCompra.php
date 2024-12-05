@@ -1,5 +1,5 @@
 <?php
-session_start(); 
+session_start();
 
 if (!isset($_SESSION['id_usuario'])) {
     header('Location: login.php');
@@ -7,7 +7,42 @@ if (!isset($_SESSION['id_usuario'])) {
 }
 
 $rol_usuario = $_SESSION['rol_usuario'];
+
+
+$id_usuario = $_SESSION['id_usuario'];
+
+require 'conexionBaseDeDatos.php';
+
+$query = "
+    SELECT 
+        p.ID_PRODUCTO,
+        p.NombreProducto AS Titulo,
+        p.PrecioProducto AS Precio,
+        p.CantidadProducto,
+        pec.CantidadAgregada,
+        (pec.CantidadAgregada * p.PrecioProducto) AS TotalProducto,
+        (
+            SELECT m.Archivo 
+            FROM multimedia m 
+            WHERE m.ID_PRODUCTO = p.ID_PRODUCTO 
+            LIMIT 1
+        ) AS ImgArchivo,
+        c.ID_CARRITO 
+    FROM ProductoEnCarrito pec
+    INNER JOIN Carrito c ON pec.ID_CARRITO = c.ID_CARRITO
+    INNER JOIN Producto p ON pec.ID_PRODUCTO = p.ID_PRODUCTO
+    WHERE c.ID_USUARIO = ?
+";
+
+
+
+$stmt = $conn->prepare($query);
+$stmt->bind_param("i", $id_usuario);
+$stmt->execute();
+$result = $stmt->get_result();
+$productos = $result->fetch_all(MYSQLI_ASSOC);
 ?>
+
 
 <!DOCTYPE html>
 <html lang="es">
@@ -97,68 +132,66 @@ $rol_usuario = $_SESSION['rol_usuario'];
     </div>
 </div>
 
-    <div class="container mt-4">
-        <div class="row">
-            <!-- Lista de productos en el carrito -->
-            <div class="col-md-8">
-                <h2>Productos en el Carrito</h2>
-                
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <h2>Productos en el Carrito</h2>
+            <?php if (empty($productos)): ?>
+                <p>No hay productos en tu carrito.</p>
+            <?php else: ?>
+                <?php foreach ($productos as $producto): ?>
+                    <div class="container mb-4 producto">
+                        <div class="row">
+                            <!-- Imagen del Producto -->
+                            <div class="col-md-3">
+                                <img src="data:image/jpeg;base64,<?= base64_encode($producto['ImgArchivo']) ?>" 
+                                    class="img-fluid" 
+                                    alt="Producto <?= htmlspecialchars($producto['Titulo']) ?>">
+                            </div>
 
-                
-                <div class="container mb-4 producto">
-                    <div class="row">
-                        <div class="col-md-3">
-                            <img src="img/producto2.jpg" class="img-fluid" alt="Producto 2">
-                        </div>
-                        <div class="col-md-9">
-                            <div class="d-flex justify-content-between">
-                                <div>
-                                    <h4>Camisa Negra (La de Juanes)</h4>
-                                    <input type="number" id="cantidadProducto2" class="form-control w-25" value="1" min="1" max="20">
-                                </div>
-                                <div class="text-end">
-                                    <p class="h5">$29999999.99</p>
-                                    <button class="btn btn-danger" onclick="eliminarProducto(2)">Eliminar Producto del Carrito</button>
+                            <!-- Detalles del Producto -->
+                            <div class="col-md-9">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h4><?= htmlspecialchars($producto['Titulo']) ?></h4>
+                                        <input type="number" 
+                                         id="cantidad"
+                                            class="form-control w-50 cantidad-producto" 
+                                            value="<?= $producto['CantidadAgregada'] ?>" 
+                                            min="1" 
+                                            max="<?php echo htmlspecialchars($producto['CantidadProducto']); ?>" 
+                                            data-precio="<?= $producto['Precio'] ?>" 
+                                            data-id="<?= $producto['ID_PRODUCTO'] ?>">
+                                    </div>
+                                    <div class="text-end">
+                                        <p class="h5">$<?= number_format($producto['Precio'], 2) ?></p>
+                                        <button class="btn btn-danger eliminar-producto" 
+                                            data-id="<?= $producto['ID_PRODUCTO'] ?>" 
+                                            data-carrito="<?= $producto['ID_CARRITO'] ?>" 
+                                            data-usuario="<?= $_SESSION['id_usuario'] ?>">Eliminar
+                                        </button>
+
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                <?php endforeach; ?>
+            <?php endif; ?>
+        </div>
 
-                
-                <div class="container mb-4 producto">
-                    <div class="row">
-                        <div class="col-md-3">
-                            <img src="img/producto1.jpg" class="img-fluid" alt="Producto 2">
-                        </div>
-                        <div class="col-md-9">
-                            <div class="d-flex justify-content-between">
-                                <div>
-                                    <h4>Camisa Blanca (No La de Juanes)</h4>
-                                    <input type="number" id="cantidadProducto2" class="form-control w-25" value="1" min="1" max="20">
-                                </div>
-                                <div class="text-end">
-                                    <p class="h5">$0.99</p>
-                                    <button class="btn btn-danger" onclick="eliminarProducto(1)">Eliminar Producto del Carrito</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Resumen del carrito -->
-            <div class="col-md-4">
-                <h2>Total</h2>
-                <div class="container total">
-                    <p class="h5">Total: <span id="total">$0.00</span></p>
-                    <a class="btn btn-warning w-100" href="#" data-bs-toggle="modal" data-bs-target="#procederpago">Proceder al Pago</a>
-
-         
-                </div>
+        <!-- Sección del Total -->
+        <div class="col-md-4">
+            <h2>Total</h2>
+            <div class="container total">
+                <p class="h5">Total: <span id="total">$0.00</span></p>
+                <a class="btn btn-warning w-100" href="#" data-bs-toggle="modal" data-bs-target="#procederpago">Proceder al Pago</a>
             </div>
         </div>
     </div>
+</div>
+
+
 
 
     <!-- PARA ELEGIR EL METODO DE PAGO SE ABRE ESTA VENTANA-->

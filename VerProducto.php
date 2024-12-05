@@ -206,8 +206,8 @@ if (empty($imagenes)) {
                         <a href="inicioChat.php?id_vendedor=<?php echo $producto['ID_Vendedor']; ?>" class="btn btn-secondary w-100">Enviar mensaje al vendedor</a> <br>
                     <?php else: ?>
                         <!-- Botón de agregar al carrito -->
-                        <button class="btn btn-warning w-100 mb-2">Agregar al carrito</button>
-                    <?php endif; ?>
+                        <button class="btn btn-warning w-100 mb-2" id="agregarCarritoBtn">Agregar al carrito</button>
+                        <?php endif; ?>
                     <br>
                     <button class="btn btn-secondary w-100" id="abrirModalListasBtn">Agregar a una lista</button>
                 </div>
