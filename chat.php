@@ -10,6 +10,8 @@ if (!isset($_SESSION['id_usuario'])) {
 $rol_usuario = $_SESSION['rol_usuario'];
 $id_usuario = $_SESSION['id_usuario']; // El ID del usuario (cliente o vendedor)
 
+
+
 // Manejar la creación o redirección de chats basados en id_usuario
 if (isset($_GET['id_vendedor'])) {
     $id_otro_usuario = $_GET['id_vendedor'];
@@ -202,10 +204,94 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['mensaje'])) {
                         </form>
                     </div>
                 <?php endif; ?>
+                
+                <?php if ($rol_usuario === 'Vendedor'): ?>
+                    <a href="#" style ="color : yellow" id="toggle-form-link">Crear producto para este cliente</a>
+                    <div id="crear-producto-form" style="display: none; ">
+                        <form action="crearProductoChat.php" method="POST" enctype="multipart/form-data">
+                            <input type="hidden" name="id_cliente" value="<?= htmlspecialchars($id_otro_usuario); ?>">
+                            <input type="hidden" name="id_chat" value="<?= htmlspecialchars($id_chat); ?>">
+                            
+                            <div class="mb-3">
+                                <label for="nombreProducto" class="form-label">Nombre del Producto</label>
+                                <input type="text" class="form-control" id="nombreProducto" name="nombreProducto" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="descripcionProducto" class="form-label">Descripción</label>
+                                <textarea class="form-control" id="descripcionProducto" name="descripcionProducto" rows="3" required></textarea>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="precioProducto" class="form-label">Precio</label>
+                                <input type="number" class="form-control" id="precioProducto" name="precioProducto" step="0.01" required>
+                            </div>
+
+
+                            <div class="mb-3">
+                                <label for="imagenProducto" class="form-label">Imagen del Producto</label>
+                                <input type="file" class="form-control" id="imagenProducto" name="imagenProducto" accept="image/*" required>
+                            </div>
+
+                            <button type="submit" class="btn btn-warning">Crear Producto</button>
+                        </form>
+                    </div>
+                <?php endif; ?>
+                <?php if ($rol_usuario === 'Cliente'): ?>
+                    <div class="productos-chat">
+                        <h5>Productos creados para ti:</h5>
+                        <?php
+                        $query_productos_chat = "SELECT p.*, m.Archivo
+                                                FROM producto p
+                                                INNER JOIN chat c ON (p.ID_USUARIO = c.ID_Vendedor)
+                                                LEFT JOIN multimedia m ON p.ID_Producto = m.ID_Producto
+                                                WHERE c.ID_Chat = ? AND p.TipoProducto = 'Cotizado'
+                                                
+                                                AND p.AutorizacionAdmin = 'No'";
+                        $stmt_productos = $conn->prepare($query_productos_chat);
+                        $stmt_productos->bind_param('i', $id_chat);
+                        $stmt_productos->execute();
+                        $productos_result = $stmt_productos->get_result();
+
+                        while ($producto = $productos_result->fetch_assoc()): 
+                            $imagen_base64 = $producto['Archivo'] ? base64_encode($producto['Archivo']) : '';
+                        
+                        ?>
+                            <div class="producto-chat">
+                                <h6><?= htmlspecialchars($producto['NombreProducto']); ?></h6>
+                                
+                                <?php if ($imagen_base64): ?>    
+                                    <img src="data:image/jpeg;base64,<?= $imagen_base64 ?>" alt="Imagen del producto" />
+                                <?php endif; ?>
+                                
+                                <p>Descripcion: <?= htmlspecialchars($producto['DescripcionProducto']); ?></p>
+                                <strong>Precio: $<?= htmlspecialchars($producto['PrecioProducto']); ?></strong>
+                                <br>
+                                <input type="number" id="cantidad_<?= $producto['ID_PRODUCTO'] ?>" value="1" min="1" /> <br>
+                                <button class="agregarCarritoBtn" data-id="<?= $producto['ID_PRODUCTO'] ?>">Añadir al carrito</button>    
+                                                    
+                            </div>
+                        <?php endwhile; ?>
+                    </div>
+                <?php endif; ?>
             </div>
+            
         </div>
     </div>
 </div>
+<script>
+    document.addEventListener("DOMContentLoaded", function () { 
+        const toggleLink = document.getElementById("toggle-form-link");
+        const formDiv = document.getElementById("crear-producto-form");
+
+        toggleLink.addEventListener("click", function (e) {
+            e.preventDefault(); // Evita el comportamiento predeterminado del enlace
+            formDiv.style.display = formDiv.style.display === "none" ? "block" : "none";
+        });
+    });
+</script>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="chat.js"></script>
 </body>
 </html>
