@@ -70,7 +70,16 @@ body {
     margin-top: 20px;
 }
 
+.btn-gusto {
+    transition: transform 0.3s ease, box-shadow 0.3s ease ;
+}
 
+/* Estilo cuando un botón está activo */
+div.text-end .btn-gusto.active {
+    transform: scale(1.1) !important; /* Aumentar ligeramente el tamaño */
+    box-shadow: 0 0 5px 2px black !important; /* Agregar un marco negro */
+    z-index: 1; /* Asegurar que el botón resaltado esté sobre otros elementos */
+}
 
 
 

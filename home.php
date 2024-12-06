@@ -7,6 +7,29 @@ if (!isset($_SESSION['id_usuario'])) {
 }
 
 $rol_usuario = $_SESSION['rol_usuario'];
+
+require 'conexionBaseDeDatos.php';
+// Consulta para productos mejor calificados
+$sqlMejorCalificados = "SELECT p.ID_PRODUCTO, p.NombreProducto, p.DescripcionProducto, m.Archivo 
+                        FROM Producto p
+                        JOIN multimedia m ON p.ID_PRODUCTO = m.ID_PRODUCTO
+                        WHERE p.AutorizacionAdmin = 'Si'
+                        GROUP BY p.ID_PRODUCTO
+                        ORDER BY p.PromedioCalificacion DESC
+                        LIMIT 3;";
+$resultMejorCalificados = $conn->query($sqlMejorCalificados);
+
+// Consulta para productos más vendidos
+$sqlMasVendidos = "SELECT p.ID_PRODUCTO, p.NombreProducto, p.DescripcionProducto, m.Archivo, SUM(t.CantidadComprada) AS TotalVentas
+                    FROM Producto p
+                    JOIN multimedia m ON p.ID_PRODUCTO = m.ID_PRODUCTO
+                    JOIN Transacción t ON p.ID_PRODUCTO = t.ID_PRODUCTO
+                    WHERE p.AutorizacionAdmin = 'Si'
+                    GROUP BY p.ID_PRODUCTO
+                    ORDER BY TotalVentas DESC
+                    LIMIT 3;";
+$resultMasVendidos = $conn->query($sqlMasVendidos);
+
 ?>
 
 <!DOCTYPE html>
@@ -111,38 +134,27 @@ $rol_usuario = $_SESSION['rol_usuario'];
     <div class="container mt-5">
         <h2 class="text-center mb-4">Productos Mejor Calificados</h2>
         <div id="productCarousel" class="carousel slide" data-bs-ride="carousel">
-            <div class="carousel-inner">
-                <!-- Producto 1 -->
-                <div class="carousel-item active">
-                    <div class="d-flex justify-content-center">
-                        <img src="img/producto1.jpg" class="d-block w-50" alt="Producto 1">
-                    </div>
-                    <div class="carousel-caption d-none d-md-block">
-                        <h5>Producto 1</h5>
-                        <p>Descripción del producto 1.</p>
-                    </div>
-                </div>
-                <!-- Producto 2 -->
-                <div class="carousel-item">
-                    <div class="d-flex justify-content-center">
-                        <img src="img/producto2.jpg" class="d-block w-50" alt="Producto 2">
-                    </div>
-                    <div class="carousel-caption d-none d-md-block">
-                        <h5>Producto 2</h5>
-                        <p>Descripción del producto 2.</p>
-                    </div>
-                </div>
-                <!-- Producto 3 -->
-                <div class="carousel-item">
-                    <div class="d-flex justify-content-center">
-                        <img src="img/producto3.jpg" class="d-block w-50" alt="Producto 3">
-                    </div>
-                    <div class="carousel-caption d-none d-md-block">
-                        <h5>Producto 3</h5>
-                        <p>Descripción del producto 3.</p>
-                    </div>
-                </div>
-            </div>
+        <div class="carousel-inner">
+            <?php
+                $active = true;
+                while ($producto = $resultMejorCalificados->fetch_assoc()) {
+                    $imgData = base64_encode($producto['Archivo']);
+                    $activeClass = $active ? 'active' : '';
+                    $active = false;
+                    echo "
+                    <div class='carousel-item $activeClass'>
+                        <div class='d-flex justify-content-center'>
+                            <img src='data:image/jpeg;base64,$imgData' class='d-block w-50' alt='{$producto['NombreProducto']}'>
+                        </div>
+                        <div class='carousel-caption d-none d-md-block text-warning fw-bold'>
+                            <h5>{$producto['NombreProducto']}</h5>
+                            <p>{$producto['DescripcionProducto']}</p>
+                        </div>
+                    </div>";
+                }
+            ?>
+        </div>
+
             <!-- Controles del carrusel -->
             <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel" data-bs-slide="prev">
                 <span class="carousel-control-prev-icon" aria-hidden="true"></span>
@@ -156,40 +168,26 @@ $rol_usuario = $_SESSION['rol_usuario'];
     </div>
 
 
-    <!-- Productos recomendados -->    
+    <!-- Productos mas vendidos -->    
     <div class="container my-5">
-        <h2 class="text-center mb-4">Productos recomendados</h2>
+        <h2 class="text-center mb-4">Productos Más Vendidos</h2>
         <div class="row">
-            <div class="col-md-4">
-                <div class="card">
-                    <img src="img/producto1.jpg" class="card-img-top" alt="Producto 1">
-                    <div class="card-body">
-                        <h5 class="card-title">Producto 1</h5>
-                        <p class="card-text">Descripción breve del producto.</p>
-                        <a href="#" class="btn btn-warning">Comprar ahora</a>
+        <?php
+            while ($producto = $resultMasVendidos->fetch_assoc()) {
+                $imgData = base64_encode($producto['Archivo']);
+                echo "
+                <div class='col-md-4'>
+                    <div class='card'>
+                        <img src='data:image/jpeg;base64,$imgData' class='card-img-top' alt='{$producto['NombreProducto']}'>
+                        <div class='card-body'>
+                            <h5 class='card-title'>{$producto['NombreProducto']}</h5>
+                            <p class='card-text'>{$producto['DescripcionProducto']}</p>
+                            <a href='#' class='btn btn-warning'>Comprar ahora</a>
+                        </div>
                     </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card">
-                    <img src="img/producto2.jpg" class="card-img-top" alt="Producto 2">
-                    <div class="card-body">
-                        <h5 class="card-title">Producto 2</h5>
-                        <p class="card-text">Descripción breve del producto.</p>
-                        <a href="#" class="btn btn-warning">Comprar ahora</a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card">
-                    <img src="img/producto3.jpg" class="card-img-top" alt="Producto 3">
-                    <div class="card-body">
-                        <h5 class="card-title">Producto 3</h5>
-                        <p class="card-text">Descripción breve del producto.</p>
-                        <a href="#" class="btn btn-warning">Comprar ahora</a>
-                    </div>
-                </div>
-            </div>
+                </div>";
+            }
+            ?>
         </div>
     </div>
 

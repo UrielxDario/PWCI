@@ -6,7 +6,114 @@ if (!isset($_SESSION['id_usuario'])) {
     exit();
 }
 
+
+$id_usuario = $_SESSION['id_usuario'];
 $rol_usuario = $_SESSION['rol_usuario'];
+
+require 'conexionBaseDeDatos.php';
+
+if($rol_usuario === 'Vendedor')
+{
+$fecha_inicio = $_GET['fechaDesde'] ?? null;
+$fecha_fin = $_GET['fechaHasta'] ?? null;
+$categoria = $_GET['categoria'] ?? 'todas';
+
+// Validación opcional de fechas.
+if ($fecha_inicio && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $fecha_inicio)) {
+    die('Fecha de inicio no válida');
+}
+
+if ($fecha_fin && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $fecha_fin)) {
+    die('Fecha de fin no válida');
+}
+
+// Consulta SQL dinámica con filtros.
+$sql = "
+    SELECT 
+        t.HoraFechaTransaccion,
+        c.NombreCategoria,
+        p.NombreProducto,
+        co.Calificación,
+        t.PrecioTotalProducto,
+        p.CantidadProducto AS ExistenciaActual
+    FROM Transacción t
+    LEFT JOIN Producto p ON t.ID_PRODUCTO = p.ID_PRODUCTO
+    LEFT JOIN Categoría c ON p.ID_CATEGORIA = c.ID_CATEGORIA
+    LEFT JOIN Comentario co ON t.ID_TRANSACCION = co.ID_TRANSACCION
+    WHERE t.ID_USUARIO_VENDEDOR = ?
+";
+
+$sql_reporte = "
+    SELECT 
+        DATE_FORMAT(t.HoraFechaTransaccion, '%Y-%m') AS MesAnio,
+        c.NombreCategoria,
+        COUNT(t.ID_TRANSACCION) AS Ventas
+    FROM Transacción t
+    LEFT JOIN Producto p ON t.ID_PRODUCTO = p.ID_PRODUCTO
+    LEFT JOIN Categoría c ON p.ID_CATEGORIA = c.ID_CATEGORIA
+    WHERE t.ID_USUARIO_VENDEDOR = ?
+    GROUP BY MesAnio, c.NombreCategoria
+    ORDER BY MesAnio DESC
+";
+
+// Agregar condiciones para filtros.
+$condiciones = [];
+$params = [$id_usuario];
+$tipos = "i";
+
+if ($fecha_inicio) {
+    $condiciones[] = "t.HoraFechaTransaccion >= ?";
+    $params[] = $fecha_inicio . " 00:00:00";
+    $tipos .= "s";
+}
+
+if ($fecha_fin) {
+    $condiciones[] = "t.HoraFechaTransaccion <= ?";
+    $params[] = $fecha_fin . " 23:59:59";
+    $tipos .= "s";
+}
+
+if ($categoria && $categoria !== 'todas') {
+    $condiciones[] = "c.NombreCategoria = ?";
+    $params[] = $categoria;
+    $tipos .= "s";
+}
+
+// Añadir condiciones a la consulta.
+if ($condiciones) {
+    $sql .= " AND " . implode(" AND ", $condiciones);
+}
+
+// Ordenar por fecha de transacción.
+$sql .= " ORDER BY t.HoraFechaTransaccion DESC";
+
+$stmt = $conn->prepare($sql);
+$stmt->bind_param($tipos, ...$params);
+$stmt->execute();
+
+$resultado = $stmt->get_result();
+$resultados = [];
+
+while ($fila = $resultado->fetch_assoc()) {
+    $resultados[] = $fila;
+}
+
+$stmt_reporte = $conn->prepare($sql_reporte);
+$stmt_reporte->bind_param('i', $id_usuario );
+$stmt_reporte->execute();
+$resultado_reporte = $stmt_reporte->get_result();
+
+
+$stmt->close();
+
+}else{
+    echo "Acceso no autorizado.";
+    header('Location: home.php');
+    exit();
+
+}
+
+
 ?>
 
 <!DOCTYPE html>
@@ -101,24 +208,28 @@ $rol_usuario = $_SESSION['rol_usuario'];
 
 <div class="container mt-5">
     <h2>Consulta de Ventas</h2>
-    <form id="consultaVentasForm" method="post" action="">
+    <form action="ConsultaVentas.php" id="consultaVentasForm" method="GET" >
         <div class="row mb-3">
             <div class="col">
                 <label for="fechaDesde" class="form-label">Desde:</label>
-                <input type="date" class="form-control" id="fechaDesde" name="fechaDesde" required>
+                <input type="date" class="form-control" id="fechaDesde" name="fechaDesde" >
             </div>
             <div class="col">
                 <label for="fechaHasta" class="form-label">Hasta:</label>
-                <input type="date" class="form-control" id="fechaHasta" name="fechaHasta" required>
+                <input type="date" class="form-control" id="fechaHasta" name="fechaHasta" >
             </div>
         </div>
         <div class="mb-3">
-            <label for="filtroCategoria" class="form-label">Buscar por Categoría:</label>
-            <select class="form-select" id="filtroCategoria" name="filtroCategoria">
-                <option value="todas">Todas</option> 
-                <option value="calzado">Calzado</option>
-                <option value="formal">Formal</option>
-                <option value="trajesDeBaño">Trajes de Baño</option>
+            <label for="categoria" class="form-label">Categoría:</label>
+            <select class="form-select" id="categoria" name="categoria">
+                <option value="todas">Todas</option>
+                <?php
+                $categorias = $conn->query("SELECT * FROM categoría");
+                while ($categoria = $categorias->fetch_assoc()) {
+                    $selected = ($categoriaSeleccionada === $categoria['NombreCategoria']) ? 'selected' : '';
+                    echo "<option value='{$categoria['NombreCategoria']}' $selected>{$categoria['NombreCategoria']}</option>";
+                }
+                ?>
             </select>
         </div>
         <button type="submit" class="btn btn-warning">Consultar Ventas</button>
@@ -138,30 +249,26 @@ $rol_usuario = $_SESSION['rol_usuario'];
                 </tr>
             </thead>
             <tbody>
-                <?php
-                
-
-                    $resultadosDetallados = [
-                        ['fecha' => '2024-09-15 10:00', 'categoria' => 'Ropa Hombre', 'producto' => 'Camisa Negra (La de Juanes)', 'calificacion' => 'Me gustó', 'precio' => '$2999999.99', 'existencia' => 19], 
-                        ['fecha' => '2024-09-11 08:00', 'categoria' => 'Ropa Hombre', 'producto' => 'Camisa Blanca (No la de Juanes)', 'calificacion' => 'No me gustó', 'precio' => '$0.99', 'existencia' => 17], 
-
-                    ];
-
-                    foreach ($resultadosDetallados as $venta) {
-                        echo "<tr>
-                                <td>{$venta['fecha']}</td>
-                                <td>{$venta['categoria']}</td>
-                                <td>{$venta['producto']}</td>
-                                <td>{$venta['calificacion']}</td>
-                                <td>{$venta['precio']}</td>
-                                <td>{$venta['existencia']}</td>
-                            </tr>";
-                    }
-                
-                ?>
+            <?php if (empty($resultados)): ?>
+                <tr>
+                    <td colspan="5" class="text-center">No se encontraron compras.</td>
+                </tr>
+            <?php else: ?>
+                <?php foreach ($resultados as $row) { ?>
+                        <tr>
+                            <td><?= $row['HoraFechaTransaccion'] ?></td>
+                            <td><?= $row['NombreCategoria'] ?></td>
+                            <td><?= $row['NombreProducto'] ?></td>
+                            <td><?= $row['Calificación'] ?></td>
+                            <td>$<?= $row['PrecioTotalProducto'] ?></td>
+                            <td><?= $row['ExistenciaActual'] ?></td>
+                        </tr>
+                <?php } ?>
+                <?php endif; ?>
             </tbody>
         </table>
     </div>
+
 
     <div id="resultadosAgrupados" class="mt-4" style="display: block;">
         <h5>Consulta Agrupada:</h5>
@@ -174,23 +281,18 @@ $rol_usuario = $_SESSION['rol_usuario'];
                 </tr>
             </thead>
             <tbody>
-                <?php
-                $resultadosAgrupados = [
-                    ['mesAnio' => 'Sep-2024', 'categoria' => 'Ropa Hombre', 'ventas' => 2],                  
-
-                ];
-
-                foreach ($resultadosAgrupados as $venta) {
-                    echo "<tr>
-                            <td>{$venta['mesAnio']}</td>
-                            <td>{$venta['categoria']}</td>
-                            <td>{$venta['ventas']}</td>
-                        </tr>";
-                }
-                ?>
+                <?php while ($row = $resultado_reporte->fetch_assoc()) { ?>
+                    <tr>
+                        <td><?= $row['MesAnio'] ?></td>
+                        <td><?= $row['NombreCategoria'] ?></td>
+                        <td><?= $row['Ventas'] ?></td>
+                    </tr>
+                <?php } ?>
             </tbody>
         </table>
+        <a href="ConsultaProductos.php" style="color:yellow; font-size: 18px;">Ver mis productos</a>
     </div>
+
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>

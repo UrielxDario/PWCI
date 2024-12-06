@@ -152,3 +152,54 @@ document.querySelectorAll('.eliminar-producto').forEach(button => {
         }
     });
 });
+
+
+
+//Para cuando se confirme la compra se mandan los datos en un JSON
+document.getElementById('confirmarCompra').addEventListener('click', function () {
+   
+
+    const productos = [];
+document.querySelectorAll('.cantidad-producto').forEach(input => {
+    productos.push({
+        ID_PRODUCTO: input.dataset.id, 
+        cantidad: parseInt(input.value, 10), 
+        PrecioProducto: parseFloat(input.dataset.precio),
+        NombreProducto: input.closest('.producto').querySelector('.nombre-producto').textContent.trim(), // .nombre-producto
+        ImgArchivo: input.closest('.producto').querySelector('.imagen-producto').src, // .imagen-producto
+        ID_CARRITO: input.closest('.producto').querySelector('.eliminar-producto').dataset.carrito
+    });
+});
+
+
+    const datos = {
+        productos
+    };
+
+    fetch('ConfirmarCompra.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(datos),
+    })
+    .then(response => response.text())
+    .then(data => {
+        console.log('Respuesta del servidor:', data);
+        try {
+            const jsonData = JSON.parse(data);
+            if (jsonData.status === 'success') {
+                alert('Compra realizada con éxito.');
+                window.location.href = 'CalificarProducto.php';
+            } else {
+                alert('Error al realizar la compra: ' + jsonData.message);
+            }
+        } catch (e) {
+            console.error('Error al analizar la respuesta:', e);
+            alert('Error al procesar la respuesta del servidor.');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Ocurrió un error. Inténtalo nuevamente.');
+    });
+});
+

@@ -1,12 +1,54 @@
 <?php
 session_start(); 
 
+require 'conexionBaseDeDatos.php'; 
 if (!isset($_SESSION['id_usuario'])) {
     header('Location: login.php');
     exit();
 }
 
 $rol_usuario = $_SESSION['rol_usuario'];
+$productos_comprados = isset($_SESSION['productos_comprados']) ? $_SESSION['productos_comprados'] : [];
+
+
+
+$id_usuario_cliente = $_SESSION['id_usuario'];
+$transacciones_pendientes = $_SESSION['transacciones_pendientes'] ?? [];
+
+if (!empty($transacciones_pendientes)) {
+    $ids_transacciones = implode(",", $transacciones_pendientes);
+
+    $query = "
+        SELECT 
+            t.ID_TRANSACCION,
+            t.ID_PRODUCTO,
+            p.NombreProducto,
+            p.PrecioProducto,
+            p.TipoProducto,
+            p.DescripcionProducto,
+            (SELECT m.Archivo FROM Multimedia m WHERE m.ID_PRODUCTO = p.ID_PRODUCTO LIMIT 1) AS ImgArchivo
+        FROM Transacción t
+        JOIN Producto p ON t.ID_PRODUCTO = p.ID_PRODUCTO
+        WHERE t.ID_TRANSACCION IN ($ids_transacciones)";
+    
+    $result = $conn->query($query);
+    $productos_comprados = $result->fetch_all(MYSQLI_ASSOC);
+
+    // Limpiar las transacciones pendientes de la sesión después de consultarlas
+    unset($_SESSION['transacciones_pendientes']);
+}
+
+
+
+
+if (isset($_POST['publicarComentarios'])) {
+    // Elimina los productos y transacciones de la sesión
+    unset($_SESSION['productos_comprados']);
+    unset($_SESSION['transacciones_pendientes']); 
+
+    header('Location: home.php');
+    exit();
+}
 ?>
 
 <!DOCTYPE html>
@@ -97,75 +139,60 @@ $rol_usuario = $_SESSION['rol_usuario'];
     </div>
 </div>
 
-    <div class="container mt-4">
-        <div class="row">
-            <!-- Lista de productos -->
-            <div class="col-md-8">
-                <h2>Productos Comprados</h2>
-                
+<div class='container mt-4'>
+    <div class='row'>
+        <div class='col-md-8'>
+            <h2>Productos Comprados</h2>
+            <?php
+            if (empty($productos_comprados)) {
+                echo "<p>No hay productos para calificar.</p>";
+            } else {
+                foreach ($productos_comprados as $producto) {
+                    $img_binario = $producto['ImgArchivo'];
+                    $img_base64 = base64_encode($img_binario);
+                    $img_src = "data:image/jpeg;base64,{$img_base64}";
+                    $nombre_producto = htmlspecialchars($producto['NombreProducto']);
+                    $precio_producto = number_format($producto['PrecioProducto'], 2);
+                    $id_transaccion = $producto['ID_TRANSACCION'];
 
-                <!-- Producto 2 -->
-                <div class="container mb-4 producto">
-                    <div class="row">
-                        <div class="col-md-3">
-                            <img src="img/producto2.jpg" class="img-fluid" alt="Producto 2">
-                        </div>
-                        <div class="col-md-9">
-                            <div class="d-flex justify-content-between">
-                                <div>
-                                    <h4>Camisa Negra (La de Juanes)</h4>
-                                    <label for="reseñaProducto" class="form-label">Reseña del Producto</label>
-                                    <textarea class="form-control" id="reseñaProducto" rows="4" placeholder="Reseña del producto" required></textarea>
-
-                                </div>
-                                <div class="text-end">
-                                    <p class="h5">$29999999.99</p>
-                                    <button class="btn btn-success" onclick="eliminarProducto(2)">Me gustó</button>
-
-                                    <button class="btn btn-danger" onclick="eliminarProducto(2)">No me gustó</button>
+                    echo "
+                    <div class='container mb-4 producto' data-id-transaccion='{$id_transaccion}'>
+                        <div class='row'>
+                            <div class='col-md-3'>
+                                <img src='{$img_src}' class='img-fluid' alt='Producto {$nombre_producto}'>
+                            </div>
+                            <div class='col-md-9'>
+                                <div class='d-flex justify-content-between'>
+                                    <div>
+                                        <h4>{$nombre_producto}</h4>
+                                        <label for='reseñaProducto{$id_transaccion}' class='form-label'>Reseña del Producto</label>
+                                        <textarea class='form-control reseña-producto' id='reseñaProducto{$id_transaccion}' rows='4' placeholder='Reseña del producto' required></textarea>
+                                    </div>
+                                    <div class='text-end'>
+                                        <p class='h5'>\$${precio_producto}</p>
+                                        <button type='button' class='btn btn-success btn-gusto' data-value='Me gustó' data-group='gusto{$id_transaccion}'>Me gustó</button>
+                                        <button type='button' class='btn btn-danger btn-gusto' data-value='No me gustó' data-group='gusto{$id_transaccion}'>No me gustó</button>
+                                        <input type='hidden' class='gusto-seleccionado' id='gustoSeleccionado{$id_transaccion}' name='gustoSeleccionado{$id_transaccion}' value=''>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-
-                <!-- Producto 1 -->
-                <div class="container mb-4 producto">
-                    <div class="row">
-                        <div class="col-md-3">
-                            <img src="img/producto1.jpg" class="img-fluid" alt="Producto 2">
-                        </div>
-                        <div class="col-md-9">
-                            <div class="d-flex justify-content-between">
-                                <div>
-                                    <h4>Camisa Blanca (No La de Juanes)</h4>
-                                    <label for="reseñaProducto" class="form-label">Reseña del Producto</label>
-                                    <textarea class="form-control" id="reseñaProducto" rows="4" placeholder="Reseña del producto" required></textarea>
-                                </div>
-                                <div class="text-end">
-                                    <p class="h5">$0.99</p>
-                                   <button class="btn btn-success" onclick="eliminarProducto(2)">Me gustó</button>
-
-                                    <button class="btn btn-danger" onclick="eliminarProducto(2)">No me gustó</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Hacer Comentarios-->
-            <div class="col-md-4">
-                
-                <div class="container total">
-     
-                    <a class="btn btn-warning w-100" href="#" data-bs-toggle="modal" data-bs-target="#procederpago">Publicar Comentarios</a>
-
-         
-                </div>
+                    </div>";
+                }
+            }
+            ?>
+        </div>
+        <div class="col-md-4">
+            <div class="container total">
+                <button class="btn btn-warning w-100" id="publicarComentarios">Publicar Comentarios</button>
             </div>
         </div>
     </div>
+</div>
+
+
+
+
 
 
     

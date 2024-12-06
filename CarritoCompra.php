@@ -145,35 +145,36 @@ $productos = $result->fetch_all(MYSQLI_ASSOC);
                             <!-- Imagen del Producto -->
                             <div class="col-md-3">
                                 <img src="data:image/jpeg;base64,<?= base64_encode($producto['ImgArchivo']) ?>" 
-                                    class="img-fluid" 
+                                    class="img-fluid imagen-producto" 
                                     alt="Producto <?= htmlspecialchars($producto['Titulo']) ?>">
                             </div>
 
                             <!-- Detalles del Producto -->
+                           
+                            
                             <div class="col-md-9">
-                                <div class="d-flex justify-content-between">
-                                    <div>
-                                        <h4><?= htmlspecialchars($producto['Titulo']) ?></h4>
-                                        <input type="number" 
-                                         id="cantidad"
-                                            class="form-control w-50 cantidad-producto" 
-                                            value="<?= $producto['CantidadAgregada'] ?>" 
-                                            min="1" 
-                                            max="<?php echo htmlspecialchars($producto['CantidadProducto']); ?>" 
-                                            data-precio="<?= $producto['Precio'] ?>" 
-                                            data-id="<?= $producto['ID_PRODUCTO'] ?>">
-                                    </div>
-                                    <div class="text-end">
-                                        <p class="h5">$<?= number_format($producto['Precio'], 2) ?></p>
-                                        <button class="btn btn-danger eliminar-producto" 
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h4 class="nombre-producto"><?= htmlspecialchars($producto['Titulo']) ?></h4>
+                                    <input type="number" 
+                                        class="form-control w-50 cantidad-producto" 
+                                        value="<?= $producto['CantidadAgregada'] ?>" 
+                                        min="1" 
+                                        max="<?= htmlspecialchars($producto['CantidadProducto']) ?>" 
+                                        data-precio="<?= $producto['Precio'] ?>" 
+                                        data-id="<?= $producto['ID_PRODUCTO'] ?>">
+                                </div>
+                                <div class="text-end">
+                                    <p class="h5">$<?= number_format($producto['Precio'], 2) ?></p>
+                                    <button class="btn btn-danger eliminar-producto" 
                                             data-id="<?= $producto['ID_PRODUCTO'] ?>" 
                                             data-carrito="<?= $producto['ID_CARRITO'] ?>" 
                                             data-usuario="<?= $_SESSION['id_usuario'] ?>">Eliminar
-                                        </button>
-
-                                    </div>
+                                    </button>
                                 </div>
                             </div>
+                        </div>
+
                         </div>
                     </div>
                 <?php endforeach; ?>
@@ -185,19 +186,16 @@ $productos = $result->fetch_all(MYSQLI_ASSOC);
             <h2>Total</h2>
             <div class="container total">
                 <p class="h5">Total: <span id="total">$0.00</span></p>
-                <a class="btn btn-warning w-100" href="#" data-bs-toggle="modal" data-bs-target="#procederpago">Proceder al Pago</a>
+                <button class="btn btn-warning w-100" data-bs-toggle="modal" data-bs-target="#procederpago">Proceder al Pago</button>
             </div>
         </div>
     </div>
 </div>
 
-
-
-
-    <!-- PARA ELEGIR EL METODO DE PAGO SE ABRE ESTA VENTANA-->
+<!-- Modal para elegir el método de pago -->
 <div class="modal fade" id="procederpago" tabindex="-1" aria-labelledby="procederpagoLabel" aria-hidden="true">
     <div class="modal-dialog">
-        <div class="modal-content" style = "color:black">
+        <div class="modal-content" style="color:black">
             <div class="modal-header">
                 <h5 class="modal-title" id="procederpagoLabel">Elige Tu Método de Pago</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -206,9 +204,9 @@ $productos = $result->fetch_all(MYSQLI_ASSOC);
                 <form id="procederpagoForm">
                     <div class="mb-3">
                         <label for="metodoPago" class="form-label">Método de Pago</label>
-                        <select class="form-select" id="metodoPago" onchange="mostrarInputNumero()" required>
+                        <select class="form-select" id="metodoPago" name="metodoPago" onchange="mostrarInputNumero()" required>
                             <option value="" disabled selected>Selecciona un método</option>
-                            <option value="paypal">Paypal</option>
+                            <option value="paypal">PayPal</option>
                             <option value="efectivo">Efectivo en Oxxo</option>
                             <option value="tarjeta">Tarjeta de Crédito</option>
                         </select>
@@ -221,12 +219,12 @@ $productos = $result->fetch_all(MYSQLI_ASSOC);
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                <a class="btn btn-primary" href="CalificarProducto.php">Confirmar Compra</a>
-
+                <button type="button" class="btn btn-primary" id="confirmarCompra">Confirmar Compra</button>
             </div>
         </div>
     </div>
 </div>
+
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
     <script src= "CarritoCompra.js"></script>
