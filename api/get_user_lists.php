@@ -23,7 +23,8 @@ $sql = "
     JOIN
         Multimedia ON Multimedia.ID_PRODUCTO = Producto.ID_PRODUCTO
     WHERE
-        Lista.ID_USUARIO = (SELECT ID_USUARIO FROM Usuario WHERE Username = ?)
+        Lista.ID_USUARIO = (SELECT ID_USUARIO FROM Usuario WHERE Username = ?) 
+        AND Lista.PrivacidadLista = 'Pública'
     GROUP BY producto.NombreProducto
 ";
 $stmt = $conn->prepare($sql);
