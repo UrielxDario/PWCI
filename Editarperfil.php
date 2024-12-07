@@ -10,6 +10,20 @@ $user_id = $_SESSION['id_usuario'];
 $rol_usuario = $_SESSION['rol_usuario'];
 
 require 'conexionBaseDeDatos.php';
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['accion'] === 'baja') {
+    // Actualizar el estatus del usuario a "inactivo"
+    $consultaBaja = "UPDATE Usuario SET EstatusUsuario = 'inactivo' WHERE Id_Usuario = '$user_id'";
+    $resultadoBaja = mysqli_query($conn, $consultaBaja);
+
+    if ($resultadoBaja) {
+        echo "<script>alert('Tu cuenta ha sido dada de baja.'); window.location.href = 'login.php';</script>";
+        exit();
+    } else {
+        echo "<script>alert('Ocurrió un error al intentar desactivar tu cuenta. Inténtalo nuevamente.');</script>";
+    }
+}
+
+
 if (isset($_POST['GuardarCambios'])) {
     date_default_timezone_set('America/Mexico_City');
     
@@ -296,13 +310,38 @@ if (isset($_POST['GuardarCambios'])) {
                         <button type="submit" class="btn btn-warning"  name="GuardarCambios">Guardar Cambios</button>
                     </div>
 
+                    <div class="d-grid mb-3">
+                        <!-- Botón de Baja -->
+                        <button type="button" class="btn btn-danger mt-3" id="botonBaja" onclick="confirmarBaja()">Darse de Baja</button>
+                    </div>        
                     
                 </form>
             </div>
         </div>
     </div>
 
+    <script>
+    function confirmarBaja() {
+    if (confirm("¿Estás seguro de que deseas darte de baja? Esta acción cambiará tu estatus a inactivo.")) {
+        // Crear un formulario oculto para enviar la solicitud de baja
+        const formularioBaja = document.createElement("form");
+        formularioBaja.method = "POST";
+        formularioBaja.action = "";
 
+        // Añadir un input hidden con la acción de baja
+        const inputAccion = document.createElement("input");
+        inputAccion.type = "hidden";
+        inputAccion.name = "accion";
+        inputAccion.value = "baja";
+
+        formularioBaja.appendChild(inputAccion);
+
+        // Añadir el formulario al documento y enviarlo
+        document.body.appendChild(formularioBaja);
+        formularioBaja.submit();
+    }
+    }
+    </script>                        
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
     <!--PARA VALIDACIONES -->
     <script src ="Editarperfil.js"></script> 
