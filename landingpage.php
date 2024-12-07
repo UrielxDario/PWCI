@@ -110,7 +110,7 @@ $resultMasVendidos = $conn->query($sqlMasVendidos);
                         <div class='card-body'>
                             <h5 class='card-title'>{$producto['NombreProducto']}</h5>
                             <p class='card-text'>{$producto['DescripcionProducto']}</p>
-                            <a href='#' class='btn btn-warning'>Comprar ahora</a>
+                             
                         </div>
                     </div>
                 </div>";

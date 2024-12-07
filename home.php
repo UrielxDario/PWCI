@@ -30,6 +30,16 @@ $sqlMasVendidos = "SELECT p.ID_PRODUCTO, p.NombreProducto, p.DescripcionProducto
                     LIMIT 3;";
 $resultMasVendidos = $conn->query($sqlMasVendidos);
 
+// Consulta para obtener las 3 categorías con mayor cantidad de productos
+$sqlCategoriasPopulares = "SELECT c.NombreCategoria, c.ID_CATEGORIA, COUNT(p.ID_PRODUCTO) AS TotalProductos
+                           FROM Categoría c
+                           JOIN Producto p ON c.ID_CATEGORIA = p.ID_CATEGORIA
+                           WHERE p.AutorizacionAdmin = 'Si'
+                           GROUP BY c.ID_CATEGORIA
+                           ORDER BY TotalProductos DESC
+                           LIMIT 3;";
+$resultCategoriasPopulares = $conn->query($sqlCategoriasPopulares);
+
 ?>
 
 <!DOCTYPE html>
@@ -182,7 +192,7 @@ $resultMasVendidos = $conn->query($sqlMasVendidos);
                         <div class='card-body'>
                             <h5 class='card-title'>{$producto['NombreProducto']}</h5>
                             <p class='card-text'>{$producto['DescripcionProducto']}</p>
-                            <a href='#' class='btn btn-warning'>Comprar ahora</a>
+                            <a class='btn btn-warning' href='VerProducto.php?id_producto=" . htmlspecialchars($producto['ID_PRODUCTO']) . "'>Comprar ahora</a>
                         </div>
                     </div>
                 </div>";
@@ -191,6 +201,40 @@ $resultMasVendidos = $conn->query($sqlMasVendidos);
         </div>
     </div>
 
+    <!-- Productos por categorías populares -->
+    <div class="container my-5">
+        <h2 class="text-center mb-4">Categorías Populares</h2>
+        <?php while ($categoria = $resultCategoriasPopulares->fetch_assoc()): ?>
+            <div class="mb-4">
+                <h3 class="text-center"><?php echo htmlspecialchars($categoria['NombreCategoria']); ?></h3>
+                <div class="row">
+                    <?php
+                    $idCategoria = $categoria['ID_CATEGORIA'];
+                    $sqlProductosCategoria = "SELECT p.ID_PRODUCTO, p.NombreProducto, p.DescripcionProducto, m.Archivo 
+                                              FROM Producto p
+                                              JOIN multimedia m ON p.ID_PRODUCTO = m.ID_PRODUCTO
+                                              WHERE p.ID_CATEGORIA = $idCategoria AND p.AutorizacionAdmin = 'Si'
+                                              GROUP BY p.ID_PRODUCTO
+                                              LIMIT 3;";
+                    $resultProductosCategoria = $conn->query($sqlProductosCategoria);
+                    while ($producto = $resultProductosCategoria->fetch_assoc()):
+                        $imgData = base64_encode($producto['Archivo']);
+                    ?>
+                        <div class="col-md-4">
+                            <div class="card">
+                                <img src="data:image/jpeg;base64,<?php echo $imgData; ?>" class="card-img-top" alt="<?php echo htmlspecialchars($producto['NombreProducto']); ?>">
+                                <div class="card-body">
+                                    <h5 class="card-title"><?php echo htmlspecialchars($producto['NombreProducto']); ?></h5>
+                                    <p class="card-text"><?php echo htmlspecialchars($producto['DescripcionProducto']); ?></p>
+                                    <a class="btn btn-warning" href="VerProducto.php?id_producto=<?php echo htmlspecialchars($producto['ID_PRODUCTO']); ?>">Comprar ahora</a>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endwhile; ?>
+                </div>
+            </div>
+        <?php endwhile; ?>
+    </div>        
 
     <br><br>
 
