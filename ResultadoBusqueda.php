@@ -243,12 +243,16 @@ $productos = $result->fetch_all(MYSQLI_ASSOC);
                                 </h4>
                                 <p><strong>Nombre Completo:</strong> <?= htmlspecialchars($producto['NombreCompleto']) ?></p>
                                 <p><strong>Rol:</strong> <?= htmlspecialchars($producto['Rol']) ?></p>
-                            <?php else: ?>
+                            <?php else: ?>                              
                                 <h4>
                                 <?php if ($producto['Cantidad'] > 0 || $producto['TipoDeProducto'] === 'Para Cotizar'): ?>
+                                    <?php if ($rol_usuario !== 'Vendedor'): ?> 
                                     <a class= "linkver" href="VerProducto.php?id_producto=<?= htmlspecialchars($producto['ID_PRODUCTO']) ?>">
                                         <?= htmlspecialchars($producto['Titulo']) ?>
                                     </a>
+                                    <?php else: ?>
+                                        <p class = "h5"><?= htmlspecialchars($producto['Titulo']) ?></p>
+                                    <?php endif; ?>
                                 <?php else: ?>
                                     <p><?= htmlspecialchars($producto['Titulo']) ?>-AGOTADO</p>
                                 <?php endif; ?>        

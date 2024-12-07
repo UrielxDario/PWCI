@@ -115,10 +115,10 @@ $stmt->close();
             <a class="navbar-brand" href="home.php">The Dark Wardrobe</a>
             
             <!-- Barra de búsqueda -->
-            <form class="d-flex search-bar ms-4 me-auto">
-                <input class="form-control me-2" type="search" placeholder="Buscar productos..." aria-label="Buscar">
-                <a class="btn btn-warning" href="ResultadoBusqueda.php">Buscar</a>
-                </form>
+            <form action = "ResultadoBusqueda.php" method = "GET" class="d-flex search-bar ms-4 me-auto">
+                <input name = "textobusqueda" class="form-control me-2" type="text" placeholder="Buscar productos..." aria-label="Buscar">
+                <button type="submit" class="btn btn-warning" href="ResultadoBusqueda.php">Buscar</button>
+            </form>
 
             <!-- Iconos de cuenta y carrito -->
             <ul class="navbar-nav">

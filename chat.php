@@ -119,9 +119,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['mensaje'])) {
     <nav class="navbar navbar-expand-lg navbar-dark">
             <div class="container-fluid">
                 <a class="navbar-brand" href="home.php">The Dark Wardrobe</a>
-                <form class="d-flex search-bar ms-4 me-auto">
-                    <input class="form-control me-2" type="search" placeholder="Buscar productos..." aria-label="Buscar">
-                    <a class="btn btn-warning" href="ResultadoBusqueda.php">Buscar</a>
+                <form action = "ResultadoBusqueda.php" method = "GET" class="d-flex search-bar ms-4 me-auto">
+                <input name = "textobusqueda" class="form-control me-2" type="text" placeholder="Buscar productos..." aria-label="Buscar">
+                <button type="submit" class="btn btn-warning" href="ResultadoBusqueda.php">Buscar</button>
                 </form>
                 <ul class="navbar-nav">
                     <li class="nav-item dropdown">
