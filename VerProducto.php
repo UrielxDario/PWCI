@@ -17,6 +17,18 @@ if (isset($_GET['id_producto']) && is_numeric($_GET['id_producto'])) {
     exit();
 }
 
+$query_comentarios = "SELECT c.Comentario, c.Calificación, u.Nombre
+                      FROM comentario c
+                      JOIN usuario u ON c.ID_USUARIO = u.ID_USUARIO
+                      WHERE c.ID_PRODUCTO = ?
+                      ORDER BY c.ID_COMENTARIO DESC
+                      LIMIT 3";
+$stmt_comentarios = $conn->prepare($query_comentarios);
+$stmt_comentarios->bind_param("i", $id_producto);
+$stmt_comentarios->execute();
+$result_comentarios = $stmt_comentarios->get_result();
+$comentarios = $result_comentarios->fetch_all(MYSQLI_ASSOC);
+
 $query = "SELECT p.NombreProducto, p.PrecioProducto, p.DescripcionProducto, p.CantidadProducto, p.TipoProducto, p.ID_USUARIO as ID_Vendedor
           FROM producto p 
           WHERE p.ID_PRODUCTO = ?";
@@ -181,17 +193,19 @@ if (empty($imagenes)) {
                 <p>Cantidad disponible en stock: <span class="text-success"><?php echo $producto['CantidadProducto']; ?> unidades</span></p>
                 <p>Descripción del producto: <?php echo htmlspecialchars($producto['DescripcionProducto']); ?></p>
                 <h5>Comentarios</h5>
-                <div class="container border p-2 mb-2">
-                    <p><strong>Cliente 1</strong> - Me gustó</p>
-                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-                </div>
-                <div class="container border p-2 mb-2" >
-                    <p><strong>Cliente 2</strong> - No me gustó</p>
-                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-                </div>
-                <div class="container border p-2" >
-                    <p><strong>Cliente 3</strong> - Me gustó</p>
-                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+                <div class="comentarios-section">
+                    <?php if (count($comentarios) > 0): ?>
+                        <?php foreach ($comentarios as $comentario): ?>
+                            <div class="container border p-2 mb-2">
+                                <p><strong><?php echo htmlspecialchars($comentario['Nombre']); ?></strong> - <?php echo htmlspecialchars($comentario['Calificación']); ?></p>
+                                <p><?php echo htmlspecialchars($comentario['Comentario']); ?></p>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <div class="container border p-2">
+                            <p>No se han hecho comentarios para este producto.</p>
+                        </div>
+                    <?php endif; ?>
                 </div>
 
                 <!-- Contador de cantidad -->
