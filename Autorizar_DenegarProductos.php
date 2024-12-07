@@ -1,4 +1,13 @@
 <?php
+session_start(); 
+
+if (!isset($_SESSION['id_usuario'])) {
+    header('Location: login.php');
+    exit();
+}
+
+
+$id_usuario = $_SESSION['id_usuario'];
 require 'conexionBaseDeDatos.php'; 
 
 
@@ -8,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['product_id'], $_POST[
 
    
     if ($action === 'autorizar') {
-        $query = "UPDATE Producto SET AutorizacionAdmin = 'Si' WHERE ID_PRODUCTO = ?";
+        $query = "UPDATE Producto SET AutorizacionAdmin = 'Si', ID_ADMIN = ? WHERE ID_PRODUCTO = ?";
     } 
     
     elseif ($action === 'denegar') {
@@ -20,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['product_id'], $_POST[
     // Prepara y ejecuta la consulta
     $stmt = $conn->prepare($query);
     if ($stmt) {
-        $stmt->bind_param('i', $product_id); // Vincula el ID del producto
+        $stmt->bind_param('ii', $id_usuario, $product_id); // Vincula el ID del producto
         if ($stmt->execute()) {
             // Redirige de nuevo a la página de autorización con un mensaje
             header('Location: AutorizarProductos.php?mensaje=exito');

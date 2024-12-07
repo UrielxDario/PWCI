@@ -1,3 +1,15 @@
+<?php
+session_start(); 
+
+if (!isset($_SESSION['id_usuario'])) {
+    header('Location: login.php');
+    exit();
+}
+
+$rol_usuario = $_SESSION['rol_usuario'];
+$user_id = $_SESSION['id_usuario'];
+?>
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -42,37 +54,26 @@
         <h1 class="text-center">Perfil de Usuario</h1>
         <div class="card">
             <div class="card-body text-center">
-                <img src="img/user.jpg" alt="Foto de Perfil" class="rounded-circle" width="150">
-                <h2>Nombre de Usuario</h2>
-                <p class="text-muted">Administrador</p>
-              
+                <img id="profileImage" src="img/user.jpg" alt="Foto de Perfil" class="rounded-circle" width="150">
+                <h2 id="username">Nombre de Usuario</h2>
+                <p id="privacyStatus" class="text-muted">Perfil Público</p>
             </div>
         </div>
 
-       
-      
-        <!-- Si es Admin -->
-        <div class="mt-4">
-            <h3>Productos Autorizados</h3>
-            <div class="card mb-2">
-                <div class="card-body">
-                    <h5 class="card-title">Producto X</h5>
-                    <p>Descripción del Producto X - <strong>Precio: $29.99</strong></p>
-                    <p>Vendedor: Juanito</p> 
-                </div>
-            </div>
-            <div class="card mb-2">
-                <div class="card-body">
-                    <h5 class="card-title">Producto Y</h5>
-                    <p>Descripción del Producto Y - <strong>Precio: $99.99</strong></p>
-                    <p>Vendedor: Pedrito</p> 
-                </div>
-            </div>
+        <div id="userLists" class="mt-4">
+            <!-- Aquí se cargarán las listas si el usuario es cliente -->
         </div>
 
-        
-    </div>
+        <div id="userProducts" class="mt-4">
+            <!-- Aquí se cargarán los productos si el usuario es vendedor -->
+        </div>
+
+        <div id="adminProducts" class="mt-4">
+            <!-- Aquí se cargarán los productos autorizados si el usuario admin -->
+        </div>
+</div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="perfil.js"></script>
 </body>
 </html>

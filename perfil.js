@@ -21,6 +21,9 @@ fetch(urlToFetch)
                 document.getElementById('userLists').innerHTML = '<h3>Estado del Perfil</h3><p>Este perfil es Privado</p>';
                 document.getElementById('userProducts').innerHTML = '';
             } else {
+                if (data.Rol === 'Administrador') {
+                    loadAdmitedProducts(data.Username);
+                }else{
                 document.getElementById('privacyStatus').textContent = 'Perfil Público';
 
                 // Verifica el rol del usuario y carga listas o productos
@@ -29,7 +32,12 @@ fetch(urlToFetch)
                 } else {
                     loadPublicLists(data.Username);
                 }
+                
+                    
+                
+                }
             }
+            
         }
     })
     .catch(error => {
@@ -37,7 +45,7 @@ fetch(urlToFetch)
     });
 
 function loadPublicLists(username) {
-    // Lógica para cargar listas públicas desde la base de datos (ejemplo modificado)
+    // Lógica para cargar listas públicas desde la base de datos 
     fetch(`api/get_user_lists.php?username=${username}`)
         .then(response => response.json())
         .then(lists => {
@@ -102,6 +110,38 @@ function loadPublishedProducts(username) {
             });
             }
             document.getElementById('userProducts').innerHTML = productsHTML;
+        })
+        .catch(error => console.error('Error al cargar productos:', error));
+}
+
+function loadAdmitedProducts(username) {
+    // Lógica para cargar productos publicados (ejemplo modificado)
+    fetch(`api/get_admin_products.php?username=${username}`)
+        .then(response => response.json())
+        .then(products => {
+            let productsHTML = `<h3>Productos Autorizados</h3>`;
+            if (products.length === 0) {
+                productsHTML += `<p>No hay productos Autorizados.</p>`;
+            } else {
+            products.forEach(product => {
+                productsHTML += `
+                    <div class="card mb-3" style="max-width: 540px;">
+                        <div class="row g-0">
+                            <div class="col-md-4">
+                                <img src="${product.ImgProducto}" class="img-fluid rounded-start" alt="${product.NombreProducto}">
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card-body">
+                                    <h5 class="card-title">${product.NombreProducto}</h5>
+                                    <p class="card-text"><strong>Precio:</strong> $${product.PrecioProducto}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            }
+            document.getElementById('adminProducts').innerHTML = productsHTML;
         })
         .catch(error => console.error('Error al cargar productos:', error));
 }

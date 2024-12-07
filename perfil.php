@@ -118,6 +118,10 @@ $user_id = $_SESSION['id_usuario'];
         <div id="userProducts" class="mt-4">
             <!-- Aquí se cargarán los productos si el usuario es vendedor -->
         </div>
+
+        <div id="adminProducts" class="mt-4">
+            <!-- Aquí se cargarán los productos autorizados si el usuario admin -->
+        </div>
 </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>

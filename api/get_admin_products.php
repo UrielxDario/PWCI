@@ -13,7 +13,7 @@ $sql = "
     FROM 
         Producto
     JOIN 
-        Usuario ON Producto.ID_USUARIO = Usuario.ID_USUARIO
+        Usuario ON Producto.ID_ADMIN = Usuario.ID_USUARIO
     JOIN 
         Multimedia ON Multimedia.ID_PRODUCTO = Producto.ID_PRODUCTO
     WHERE 
