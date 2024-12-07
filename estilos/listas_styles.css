@@ -93,9 +93,12 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    cursor: pointer;
 }
 
-
+.list-group-item:hover{
+background-color: #9d9d9d;
+}
 
 
 

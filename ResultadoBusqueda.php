@@ -23,8 +23,11 @@ $sql = "(
         producto.PrecioProducto AS Valor, 
         producto.DescripcionProducto AS Detalle, 
         producto.TipoProducto AS TipoDeProducto,
+        producto.CantidadProducto AS Cantidad,
+        producto.PromedioCalificacion AS Promedio,
         categoría.NombreCategoria AS Categoria, 
-        multimedia.Archivo AS ImgArchivo, 
+        multimedia.Archivo AS ImgArchivo,
+        SUM(t.CantidadComprada) AS TotalVentas, 
         NULL AS ImgPerfil, 
         NULL AS Username, 
         NULL AS NombreCompleto, 
@@ -32,6 +35,7 @@ $sql = "(
     FROM producto
     INNER JOIN categoría ON producto.ID_CATEGORIA = categoría.ID_CATEGORIA
     LEFT JOIN multimedia ON producto.ID_PRODUCTO = multimedia.ID_PRODUCTO
+    JOIN Transacción t ON producto.ID_PRODUCTO = t.ID_PRODUCTO
     WHERE producto.AutorizacionAdmin = 'Si' " . 
     (!empty($palabra) ? "AND producto.NombreProducto LIKE '%$palabra%'" : "") . "
     " . ($categoriaSeleccionada !== 'ninguno' ? "AND categoría.NombreCategoria = '$categoriaSeleccionada'" : "") . "
@@ -39,7 +43,7 @@ $sql = "(
 )";
 
 // Si no se seleccionó una categoría, agregar los usuarios a la consulta
-if ($categoriaSeleccionada === 'ninguno') {
+if ($categoriaSeleccionada === 'ninguno' && $ordenSeleccionado === 'Default') {
     $sql .= " UNION
     (
         SELECT
@@ -49,15 +53,20 @@ if ($categoriaSeleccionada === 'ninguno') {
             NULL AS Valor,
             NULL AS Detalle,
             NULL AS TipoDeProducto,
+            NULL AS Cantidad,
+            NULL AS Promedio,
             NULL AS Categoria,
             NULL AS ImgArchivo,
+            NULL AS TotalVentas,
             usuario.ImgPerfil AS ImgPerfil,
             usuario.Username AS Username,
             CONCAT(usuario.Nombre, ' ', usuario.ApellidoPaterno, ' ', usuario.ApellidoMaterno) AS NombreCompleto,
             usuario.Rol AS Rol
         FROM usuario
         WHERE 
-            usuario.ID_USUARIO != {$_SESSION['id_usuario']} AND (
+            usuario.ID_USUARIO != {$_SESSION['id_usuario']} 
+            AND usuario.EstatusUsuario = 'activo' 
+            AND (
                 usuario.Username LIKE '%$palabra%' OR 
                 usuario.Nombre LIKE '%$palabra%' OR 
                 usuario.ApellidoPaterno LIKE '%$palabra%' OR 
@@ -70,6 +79,12 @@ if ($ordenSeleccionado === 'precioAsc') {
     $sql .= " ORDER BY Valor ASC";
 } elseif ($ordenSeleccionado === 'precioDesc') {
     $sql .= " ORDER BY Valor DESC";
+} elseif ($ordenSeleccionado === 'masVendido') {
+    $sql .= " ORDER BY TotalVentas DESC";
+} elseif ($ordenSeleccionado === 'menosVendido') {
+    $sql .= " ORDER BY TotalVentas ASC";
+} elseif ($ordenSeleccionado === 'mejorCalificado') {
+    $sql .= " ORDER BY Promedio DESC";
 }
 
 $result = $conn->query($sql);
@@ -179,6 +194,10 @@ $productos = $result->fetch_all(MYSQLI_ASSOC);
                         <option value="Default">Predeterminado</option>
                         <option value="precioAsc" <?= ($ordenSeleccionado === 'precioAsc') ? 'selected' : '' ?>>Precio: Del más bajo al más alto</option>
                         <option value="precioDesc" <?= ($ordenSeleccionado === 'precioDesc') ? 'selected' : '' ?>>Precio: Del más alto al más bajo</option>
+                        <option value="masVendido" <?= ($ordenSeleccionado === 'masVendido') ? 'selected' : '' ?>>Mas vendido</option>    
+                        <option value="menosVendido" <?= ($ordenSeleccionado === 'menosVendido') ? 'selected' : '' ?>>Menos vendido</option>    
+                        <option value="mejorCalificado" <?= ($ordenSeleccionado === 'mejorCalificado') ? 'selected' : '' ?>>Mejor calificado</option>    
+                    
                     </select>
                 </div>
                 <div class="col-md-6">
@@ -220,15 +239,19 @@ $productos = $result->fetch_all(MYSQLI_ASSOC);
                                 <h4>
                                 <a class="linkver" href="perfil.php?id_usuario=<?= htmlspecialchars($producto['ID_USUARIO']) ?>">
                                         <?= htmlspecialchars($producto['Username']) ?>
-                                    </a>
+                                </a>
                                 </h4>
                                 <p><strong>Nombre Completo:</strong> <?= htmlspecialchars($producto['NombreCompleto']) ?></p>
                                 <p><strong>Rol:</strong> <?= htmlspecialchars($producto['Rol']) ?></p>
                             <?php else: ?>
                                 <h4>
+                                <?php if ($producto['Cantidad'] > 0 || $producto['TipoDeProducto'] === 'Para Cotizar'): ?>
                                     <a class= "linkver" href="VerProducto.php?id_producto=<?= htmlspecialchars($producto['ID_PRODUCTO']) ?>">
                                         <?= htmlspecialchars($producto['Titulo']) ?>
                                     </a>
+                                <?php else: ?>
+                                    <p><?= htmlspecialchars($producto['Titulo']) ?>-AGOTADO</p>
+                                <?php endif; ?>        
                                 </h4>
                                 <p><strong>Categoría:</strong> <?= htmlspecialchars($producto['Categoria']) ?></p>
                                 <p><strong>Descripción:</strong> <?= htmlspecialchars($producto['Detalle']) ?></p>
@@ -237,11 +260,15 @@ $productos = $result->fetch_all(MYSQLI_ASSOC);
                         
                         <?php if (empty($producto['Username'])): ?>
                             <div class="text-end">
+                                <?php if ($producto['Cantidad'] < 1 && $producto['TipoDeProducto'] !== 'Para Cotizar'): ?>
+                                    <p class="h5">AGOTADO</p>
+                                <?php else: ?>
                                 <?php if ($producto['TipoDeProducto'] === 'Para Cotizar'): ?>
                                     <p class="h5">Para Cotización</p>
                                 <?php else: ?>
                                     <p class="h5 precio-pesos">$<?= number_format($producto['Valor'], 2) ?> MXN</p>
                                     <p class="h5 precio-dolares" data-precio="<?= $producto['Valor'] ?>">USD</p>
+                                <?php endif; ?>
                                 <?php endif; ?>
                             </div>
                         <?php endif; ?>

@@ -48,7 +48,7 @@ function crearCategoria() {
         const orden = filtroBusqueda.value.trim();
         const categoria = filtroCategoria.value.trim();
 
-        // Solicitud AJAX
+        
         fetch("filtrarProductos.php", {
             method: "POST",
             headers: { "Content-Type": "application/json" },

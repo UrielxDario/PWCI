@@ -76,7 +76,7 @@
                     li.className = 'list-group-item';
                     li.innerHTML = `
                         <strong>${lista.NombreLista}</strong>
-                        <span class="badge bg-${lista.PrivacidadLista === 'Publica' ? 'success' : 'warning'}">
+                        <span class="badge bg-${lista.PrivacidadLista === 'Pública' ? 'success' : 'danger'}">
                             ${lista.PrivacidadLista}
                         </span>
                     `;
@@ -119,7 +119,7 @@
                     const card = document.createElement('div');
                     card.className = 'card mb-3';
     
-                    const precio = producto.PrecioProducto === null ? 'Para Cotización' : `$${producto.PrecioProducto.toFixed(2)}`;
+                    const precio = producto.PrecioProducto === null ? 'Para Cotizar' : `$${producto.PrecioProducto.toFixed(2)}`;
     
                     const botonEliminar = document.createElement('button');
                     botonEliminar.className = 'btn btn-danger btn-sm ms-3';
