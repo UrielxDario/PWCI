@@ -35,7 +35,7 @@ $sql = "(
     FROM producto
     INNER JOIN categoría ON producto.ID_CATEGORIA = categoría.ID_CATEGORIA
     LEFT JOIN multimedia ON producto.ID_PRODUCTO = multimedia.ID_PRODUCTO
-    JOIN Transacción t ON producto.ID_PRODUCTO = t.ID_PRODUCTO
+    LEFT JOIN Transacción t ON producto.ID_PRODUCTO = t.ID_PRODUCTO
     WHERE producto.AutorizacionAdmin = 'Si' " . 
     (!empty($palabra) ? "AND producto.NombreProducto LIKE '%$palabra%'" : "") . "
     " . ($categoriaSeleccionada !== 'ninguno' ? "AND categoría.NombreCategoria = '$categoriaSeleccionada'" : "") . "
